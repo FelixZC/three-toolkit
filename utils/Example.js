@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+import {
+    ThreeDemo
+} from './Demo'
 import WebGL from 'three/addons/capabilities/WebGL.js';
 
 function checkIsWebGLAvailable() {
@@ -73,4 +76,41 @@ export function RenderLine() {
     if (checkIsWebGLAvailable) {
         renderer.render(scene, camera);
     }
+}
+
+
+/**
+ * 渲染一个球
+ */
+export function RenderBall() {
+    const instance = new ThreeDemo()
+    // 场景中添加球
+    const geometry = new THREE.BoxGeometry(2, 2, 2)
+    const geometry_material = new THREE.MeshStandardMaterial({
+        color: 0xaafabb
+    })
+    instance.init()
+    instance.scene.add(new THREE.Mesh(geometry, geometry_material))
+}
+
+
+/**
+ * 渲染带贴图的立方体
+ */
+export function RenderCubeWithTextures() {
+    // 场景中添加立方体
+    const textureLoader = new THREE.TextureLoader();
+    const geometry_material = new THREE.MeshStandardMaterial({
+        map: textureLoader.load('public/textures/1.jpg'),
+        aoMap: textureLoader.load('public/textures/2.jpg'),
+        alphaMap: textureLoader.load('public/textures/1.png'),
+        normalMap: textureLoader.load('public/textures/2.png'),
+        transparent: true,
+        roughness: 0,
+    })
+    const instance = new ThreeDemo()
+    const geometry = new THREE.BoxGeometry(2, 2, 2)
+    const model = new THREE.Mesh(geometry, geometry_material)
+    instance.init()
+    instance.scene.add(model)
 }

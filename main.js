@@ -1,5 +1,8 @@
 import {
+	RenderBall,
+	RenderCube,
+	RenderCubeWithTextures,
 	RenderLine
 } from './utils/Example'
 
-RenderLine()
+RenderCubeWithTextures()
