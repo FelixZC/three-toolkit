@@ -5,7 +5,7 @@ export class ThreeDemo {
     this.width = window.innerWidth
     this.height = window.innerHeight
     this.aspectRatio = this.width / this.height
-
+    this.devicePixelRatio = window.devicePixelRatio
     // 创建场景
     this.scene = null
     // 创建相机
@@ -42,13 +42,13 @@ export class ThreeDemo {
 
     // ====== 搭建相机 (模拟人视角去看景象) PerspectiveCamera = 透视相机 ======
     this.camera = new THREE.PerspectiveCamera(
-      75, // 视角
+      90, // 视角
       this.aspectRatio, // 纵横比
       0.1, // nearPlane 近平面
-      1000 // farPlane 远平面
+      100 // farPlane 远平面
     )
     // 设置相机位置
-    this.camera.position.set(0, 0, 2) // x, y, z
+    this.camera.position.set(1, 1, 4) // x, y, z
     // 更新摄像头宽高比例
     this.camera.aspect = this.aspectRatio
     // 更新摄像头的矩阵
@@ -65,6 +65,7 @@ export class ThreeDemo {
     this.renderer.outputEncoding = THREE.sRGBEncoding
     // 设置渲染器宽高
     this.renderer.setSize(this.width, this.height)
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setClearColor(this.scene.fog.color)
 
     // 屏幕变化 更新渲染 (相机视角变化 和 渲染器变化)

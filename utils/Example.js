@@ -101,16 +101,56 @@ export function RenderCubeWithTextures() {
     // 场景中添加立方体
     const textureLoader = new THREE.TextureLoader();
     const geometry_material = new THREE.MeshStandardMaterial({
-        map: textureLoader.load('public/textures/1.jpg'),
-        aoMap: textureLoader.load('public/textures/2.jpg'),
-        alphaMap: textureLoader.load('public/textures/1.png'),
-        normalMap: textureLoader.load('public/textures/2.png'),
+        map: textureLoader.load('public/textures/1.png'),
         transparent: true,
         roughness: 0,
     })
     const instance = new ThreeDemo()
-    const geometry = new THREE.BoxGeometry(2, 2, 2)
+    const geometry = new THREE.BoxGeometry(1, 2, 2)
     const model = new THREE.Mesh(geometry, geometry_material)
+    instance.init()
+    instance.scene.add(model)
+}
+
+function getTexturesFromAtlasFile(atlasImgUrl, tilesNum) {
+    const textures = [];
+    for (let i = 0; i < tilesNum; i++) {
+        textures[i] = new THREE.Texture();
+        const url = `${atlasImgUrl}${i + 1}.png`;
+        new THREE.ImageLoader()
+            .load(url, (image) => {
+                let canvas, context;
+                console.log(image)
+                const tileWidth = image.height;
+                for (let i = 0; i < textures.length; i++) {
+                    canvas = document.createElement('canvas');
+                    context = canvas.getContext('2d');
+                    canvas.height = tileWidth;
+                    canvas.width = tileWidth;
+                    context.drawImage(image, tileWidth * i, 0, tileWidth, tileWidth, 0, 0, tileWidth, tileWidth);
+                    textures[i].image = canvas;
+                    textures[i].needsUpdate = true;
+                }
+            });
+    }
+    return textures;
+}
+
+/**
+ * 渲染带贴图的立方体2
+ */
+export function RenderCubeWithTextures2() {
+    // 获取加载6个面的贴图
+    const textures = getTexturesFromAtlasFile('public/textures/', 6);
+    const materials = [];
+    for (let i = 0; i < 6; i++) {
+        // 将贴图贴在立方几何体上
+        materials.push(new THREE.MeshBasicMaterial({
+            map: textures[i]
+        }));
+    }
+    const model = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), materials)
+    const instance = new ThreeDemo()
     instance.init()
     instance.scene.add(model)
 }
