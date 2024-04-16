@@ -1,0 +1,17 @@
+{
+  "name": "three-practice",
+  "version": "1.0.0",
+  "description": "web 3d",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "pzc",
+  "license": "ISC",
+  "dependencies": {
+    "three": "^0.163.0"
+  },
+  "devDependencies": {
+    "vite": "^5.2.8"
+  }
+}
