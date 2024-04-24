@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import WebGL from 'three/addons/capabilities/WebGL.js';
-
 export default class ThreeDemo {
     constructor() {
         // 获取当前浏览器窗口的宽度（以像素为单位）
@@ -20,7 +19,8 @@ export default class ThreeDemo {
         this.camera = null; // Three.js相机对象，将在createScene()方法中创建
         this.light = null; // Three.js光照对象，将在createLight()方法中创建
         this.renderer = null; // Three.js渲染器对象，将在createRenderer()方法中创建
-        this.onRenderFcts = []; // 存储每一帧渲染时需要执行的函数
+        this.cube = null; // 用于保存立方体的引用
+
         // 检查 WebGL 是否可用
         if (!WebGL.isWebGLAvailable()) {
             const warning = WebGL.getWebGLErrorMessage();
@@ -37,25 +37,25 @@ export default class ThreeDemo {
         this.createRenderer(); // 创建渲染器
         this.createLight(); // 创建光照
         document.body.appendChild(this.renderer.domElement); // 添加渲染器到DOM
+
+        // 设置渲染循环
         let lastTime = performance.now();
 
         const render = (time) => {
             const delta = time - lastTime;
             lastTime = time;
 
-            this.renderer.render(this.scene, this.camera); // 渲染场景
-
-            // 执行渲染循环中的所有更新函数
-            this.onRenderFcts.forEach(fn => fn(delta, time));
-
-            requestAnimationFrame(render); // 请求下一帧动画
+            // 渲染场景
+            this.renderer.render(this.scene, this.camera);
         };
 
+        // 开始渲染
         const start = performance.now();
         render(start);
-        this.axesHelper(); // 添加辅助坐标系
-    }
 
+        // 添加辅助坐标系到场景
+        // this.axesHelper(); // 便于观察模型坐标方向
+    }
 
     /**
      * 创建3D场景
@@ -128,8 +128,50 @@ export default class ThreeDemo {
         this.scene.add(this.light);
         this.scene.add(this.directionalLight);
     }
+
+
+    /**
+     * 设置鼠标拖动旋转立方体的事件监听器
+     */
+    setupMouseControls(cube) {
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        const onDocumentMouseDown = (event) => {
+            event.preventDefault();
+            isDragging = true;
+            lastMouseX = event.clientX;
+            lastMouseY = event.clientY;
+        };
+
+        const onDocumentMouseMove = (event) => {
+            if (isDragging) {
+                const mouseX = event.clientX;
+                const mouseY = event.clientY;
+
+                const deltaX = (mouseX - lastMouseX) * 0.005;
+                const deltaY = (mouseY - lastMouseY) * 0.005;
+
+                cube.rotation.x += deltaY;
+                cube.rotation.y += deltaX;
+
+                lastMouseX = mouseX;
+                lastMouseY = mouseY;
+            }
+        };
+
+        const onDocumentMouseUp = () => {
+            isDragging = false;
+        };
+
+        document.addEventListener('mousedown', onDocumentMouseDown);
+        document.addEventListener('mousemove', onDocumentMouseMove);
+        document.addEventListener('mouseup', onDocumentMouseUp);
+    }
 }
 
+// 以下是一些辅助渲染函数，用于在ThreeDemo实例上渲染不同类型的3D对象
 
 /**
  * 渲染一个正方体
@@ -137,31 +179,22 @@ export default class ThreeDemo {
  * @param {THREE.Material} [material] - 自定义材质
  * @param {THREE.Vector3} [position] - 自定义立方体位置
  */
-function renderCube(demo, material, position, initialRotation = { x: 0, y: 0, z: 0 }, rotationSpeed = { x: 0, y: 0, z: 0 }) {
+function renderCube(demo, material, position, initialRotation = {
+    x: 0,
+    y: 0,
+    z: 0
+}) {
+    // 创建立方体几何体和材质
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const cube = new THREE.Mesh(geometry, material);
+
+    // 设置立方体位置和初始旋转角度
     cube.position.copy(position);
     cube.rotation.set(initialRotation.x, initialRotation.y, initialRotation.z);
+
+    // 将立方体添加到场景中
     demo.scene.add(cube);
-
-    // 为立方体添加一个定时更新旋转的方法
-    function updateRotation(time) {
-        const delta = time - (cube.userData.lastUpdateTime || time);
-        cube.userData.lastUpdateTime = time;
-
-        cube.rotation.x += rotationSpeed.x * delta;
-        cube.rotation.y += rotationSpeed.y * delta;
-        cube.rotation.z += rotationSpeed.z * delta;
-
-        cube.rotation.x %= Math.PI * 2;
-        cube.rotation.y %= Math.PI * 2;
-        cube.rotation.z %= Math.PI * 2;
-    }
-
-    // 在渲染循环中调用更新方法
-    demo.onRenderFcts.push(function(delta, now) {
-        updateRotation(now);
-    });
+    demo.setupMouseControls(cube)
 }
 
 /**
@@ -195,10 +228,10 @@ function renderBall(demo, material = new THREE.MeshStandardMaterial({
 }
 
 /**
- * 渲染一个带单贴图的立方体
+ * 渲染一个带单贴图的立方体，并添加鼠标拖动旋转功能
  * @param {ThreeDemo} demo - ThreeDemo实例
  * @param {string} textureUrl - 单张贴图URL
- * @param {THREE.Vector3} [position] - 自定义立方体位置
+ * @param {THREE.Vector3} [position=THREE.Vector3(0, 0, 0)] - 自定义立方体位置
  */
 function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vector3(0, 0, 0)) {
     const textureLoader = new THREE.TextureLoader();
@@ -207,10 +240,13 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
         transparent: true,
         roughness: 0
     });
-    const geometry = new THREE.BoxGeometry(1, 2, 2);
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
     const cube = new THREE.Mesh(geometry, material);
     cube.position.copy(position);
+
+    // 添加立方体到场景
     demo.scene.add(cube);
+    demo.setupMouseControls(cube);
 }
 
 /**
@@ -221,7 +257,7 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
  * @param {number} tilesNum - 贴图数量
  * @param {THREE.Vector3} [position=THREE.Vector3(0, 0, 0)] - 自定义立方体位置
  */
-async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, position = new THREE.Vector3(0, 0, 0)) {
+async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, position = new THREE.Vector3(1, 1, 1)) {
     const textures = await loadTexturesFromAtlas(atlasImgUrl, tilesNum);
 
     // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
@@ -230,7 +266,7 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
     }));
 
     // 创建立方体几何体
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const geometry = new THREE.BoxGeometry(2.5, 2.5, 2.5);
 
     // 使用多材质创建立方体网格，并设置其位置
     const cube = new THREE.Mesh(geometry, materials);
@@ -238,6 +274,7 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
 
     // 将立方体添加到场景中
     demo.scene.add(cube);
+    demo.setupMouseControls(cube);
 }
 
 /**
@@ -281,8 +318,13 @@ function loadImage(imageUrl) {
 const demo = new ThreeDemo();
 demo.init();
 
-renderCube(demo, new THREE.MeshBasicMaterial({ color: 0x00ff00 }), new THREE.Vector3(0, 0, 0), { x: 0, y: Math.PI / 4, z: 0 }, { x: 0.01, y: 0.01, z: 0 });
-// renderLine(demo, [new THREE.Vector3(-10, 0, 0), new THREE.Vector3(0, 10, 0), new THREE.Vector3(10, 0, 0)]);
+
+
+
+// renderCube(demo, new THREE.MeshBasicMaterial({
+//     color: 0xffffff
+// }), new THREE.Vector3(0, 0, 0));
+// renderLine(demo, [new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0)]);
 // renderBall(demo);
 // renderCubeWithSingleTexture(demo, 'public/textures/1.png');
-// await renderCubeWithMultipleTextures(demo, 'public/textures/', 6);
+await renderCubeWithMultipleTextures(demo, 'public/textures/', 6);
