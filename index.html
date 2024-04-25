@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 定义页面标题 -->
   <title>Three.js Practice</title>
-
-  <!-- 如果有自定义CSS文件，引入它们 -->
-  <link rel="stylesheet" href="src/styles/index.css">
+  <!-- 设置字符编码 -->
+  <meta charset="utf-8">
+  <!-- 配置视口以适应不同设备，禁止用户缩放 -->
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <!-- 引入外部CSS样式表 -->
+  <link type="text/css" rel="stylesheet" href="src/styles/index.css">
 </head>
-<body>
-  <div id="app"></div>
 
+<body>
   <!-- 添加Three.js渲染内容的容器 -->
-  <div id="three-canvas-container"></div>
+  <div id="container"></div>
 
   <!-- 引入您的主JavaScript文件 -->
   <script type="module" src="/src/main.js"></script>
 </body>
+
 </html>

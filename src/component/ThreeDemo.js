@@ -17,7 +17,7 @@ function renderCube(demo, material, position, initialRotation = {
     z: 0
 }) {
     // 创建立方体几何体和材质
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const geometry = new THREE.BoxGeometry(5, 5, 5);
     const cube = new THREE.Mesh(geometry, material);
 
     // 设置立方体位置和初始旋转角度
@@ -71,7 +71,7 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
         transparent: true,
         roughness: 0
     });
-    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const geometry = new THREE.BoxGeometry(5, 5, 5);
     const cube = new THREE.Mesh(geometry, material);
     cube.position.copy(position);
 
@@ -88,7 +88,7 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
  * @param {number} tilesNum - 贴图数量
  * @param {THREE.Vector3} [position=THREE.Vector3(0, 0, 0)] - 自定义立方体位置
  */
-async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, position = new THREE.Vector3(1, 1, 1)) {
+async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, position = new THREE.Vector3(0, 0, 0)) {
     const textures = await loadTexturesFromAtlas(atlasImgUrl, tilesNum);
 
     // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
@@ -97,7 +97,7 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
     }));
 
     // 创建立方体几何体
-    const geometry = new THREE.BoxGeometry(2.5, 2.5, 2.5);
+    const geometry = new THREE.BoxGeometry(5, 5, 5);
 
     // 使用多材质创建立方体网格，并设置其位置
     const cube = new THREE.Mesh(geometry, materials);
@@ -147,11 +147,11 @@ function loadImage(imageUrl) {
 
 // 示例用法
 const demo = new ThreeDemo();
-demo.init();
+demo.init()
 // renderCube(demo, new THREE.MeshBasicMaterial({
 //     color: 0xffffff
 // }), new THREE.Vector3(0, 0, 0));
-// renderLine(demo, [new THREE.Vector3(-1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(1, 0, 0)]);
+// renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
-// renderCubeWithSingleTexture(demo, 'public/textures/1.png');
-await renderCubeWithMultipleTextures(demo, 'public/textures/', 6);
+// renderCubeWithSingleTexture(demo, 'src/image/textures/3.png');
+await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6);

@@ -33,7 +33,7 @@ export default class ThreeDemo {
         // 检查 WebGL 是否可用
         if (!WebGL.isWebGLAvailable()) {
             const warning = WebGL.getWebGLErrorMessage();
-            document.getElementById('three-canvas-container').appendChild(warning);
+            document.getElementById('container').appendChild(warning);
             throw new Error('WebGL is not available.');
         }
     }
@@ -72,7 +72,7 @@ export default class ThreeDemo {
             100 // 远裁剪面距离
         );
 
-        this.camera.position.set(1, 1, 4); // 设置相机初始位置
+        this.camera.position.set(5, 2, 8); // 设置相机初始位置
         this.camera.aspect = this.aspectRatio; // 更新相机宽高比（可能已改变）
         this.camera.updateProjectionMatrix(); // 应用新的投影矩阵
 
@@ -277,7 +277,7 @@ export default class ThreeDemo {
         this.setUpGUI();
 
         // 将渲染器的 DOM 元素附加到网页上
-        document.getElementById('three-canvas-container').appendChild(this.renderer.domElement);
+        document.getElementById('container').appendChild(this.renderer.domElement);
         // 启动渲染循环
         this.animate();
         console.log('Renderer DOM element attached:', document.body.contains(this.renderer.domElement));
