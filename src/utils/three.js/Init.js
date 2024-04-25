@@ -110,11 +110,15 @@ export default class ThreeDemo {
      * 初始化交互功能（使用 OrbitControls）。
      */
     async setUpInteractions() {
+        console.log('setUpInteractions() called');
         const OrbitControls = await loadOrbitControls();
+        console.log('OrbitControls loaded:', OrbitControls);
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        console.log('OrbitControls instantiated:', this.controls);
         this.controls.enableDamping = true; // 启用阻尼（平滑过渡）
         this.controls.dampingFactor = 0.05; // 设置阻尼系数
         this.controls.enableZoom = true; // 启用缩放
+        console.log('Renderer DOM element:', this.renderer.domElement);
     }
 
     /**
@@ -273,9 +277,9 @@ export default class ThreeDemo {
         this.setUpGUI();
 
         // 将渲染器的 DOM 元素附加到网页上
-        document.body.appendChild(this.renderer.domElement);
-
+        document.getElementById('three-canvas-container').appendChild(this.renderer.domElement);
         // 启动渲染循环
         this.animate();
+        console.log('Renderer DOM element attached:', document.body.contains(this.renderer.domElement));
     }
 }
