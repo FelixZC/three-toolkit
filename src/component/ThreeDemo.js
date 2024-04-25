@@ -26,7 +26,6 @@ function renderCube(demo, material, position, initialRotation = {
 
     // 将立方体添加到场景中
     demo.scene.add(cube);
-    setupMouseControls(cube);
 }
 
 /**
@@ -78,7 +77,7 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
 
     // 添加立方体到场景
     demo.scene.add(cube);
-    setupMouseControls(cube);
+    // setupMouseControls(cube);
 }
 
 /**
@@ -106,7 +105,7 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
 
     // 将立方体添加到场景中
     demo.scene.add(cube);
-    setupMouseControls(cube);
+    // setupMouseControls(cube);
 }
 
 /**

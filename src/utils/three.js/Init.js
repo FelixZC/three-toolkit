@@ -1,5 +1,14 @@
 import * as THREE from 'three';
+import GUI from 'lil-gui';
 import WebGL from 'three/addons/capabilities/WebGL.js';
+
+// 动态导入 OrbitControls
+async function loadOrbitControls() {
+    const {
+        OrbitControls
+    } = await import('three/examples/jsm/controls/OrbitControls');
+    return OrbitControls;
+}
 
 /**
  * 一个用于创建和管理 Three.js 场景的基类。
@@ -98,6 +107,60 @@ export default class ThreeDemo {
     }
 
     /**
+     * 初始化交互功能（使用 OrbitControls）。
+     */
+    async setUpInteractions() {
+        const OrbitControls = await loadOrbitControls();
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true; // 启用阻尼（平滑过渡）
+        this.controls.dampingFactor = 0.05; // 设置阻尼系数
+        this.controls.enableZoom = true; // 启用缩放
+    }
+
+    /**
+     * 初始化 GUI 控制面板。
+     */
+    setUpGUI() {
+        this.gui = new GUI();
+
+        // 创建光照颜色控制器
+        const lightColorController = this.gui.addColor(this.directionalLight, 'color').name('Directional Light Color');
+        lightColorController.onChange((value) => {
+            this.directionalLight.color.set(value);
+        });
+
+        // 创建光照强度控制器
+        const lightIntensityController = this.gui.add(this.directionalLight, 'intensity', 0, 5).step(0.1).name('Directional Light Intensity');
+        lightIntensityController.onChange((value) => {
+            this.directionalLight.intensity = value;
+        });
+
+        // 创建雾效颜色控制器
+        const fogColorController = this.gui.addColor(this.scene.fog, 'color').name('Fog Color');
+        fogColorController.onChange((value) => {
+            this.scene.fog.color.set(value);
+        });
+
+        // 创建雾效范围控制器
+        const fogRangeController = this.gui.add(this.scene.fog, 'near', 0, 0.5).step(0.1).name('Fog Near');
+        fogRangeController.onChange((value) => {
+            this.scene.fog.near = value;
+        });
+
+        const fogFarController = this.gui.add(this.scene.fog, 'far', 0, 1000).step(1).name('Fog Far');
+        fogFarController.onChange((value) => {
+            this.scene.fog.far = value;
+        });
+    }
+
+    /**
+     * 更新方法，用于在每一帧中更新交互控制器和可能需要实时更新的对象。
+     */
+    update() {
+        this.controls.update(); // 更新 OrbitControls
+    }
+
+    /**
      * 添加坐标轴辅助线，帮助识别场景中 XYZ 坐标的方向。
      *
      * @param {number} [size=5] 辅助线的长度
@@ -178,14 +241,17 @@ export default class ThreeDemo {
      * 启动渲染循环，不断更新并呈现场景。
      */
     animate() {
-        requestAnimationFrame(() => this.animate());
-        this.renderer.render(this.scene, this.camera);
+        requestAnimationFrame(() => {
+            this.update();
+            this.renderer.render(this.scene, this.camera);
+            this.animate();
+        });
     }
 
     /**
-     * 初始化整个场景，包括设置渲染器、相机、灯光、场景本身，以及添加辅助工具。
+     * 初始化整个场景，包括设置渲染器、相机、灯光、场景本身，以及添加辅助工具、交互功能和 GUI 控制面板。
      */
-    init() {
+    async init() {
         if (!WebGL.isWebGLAvailable()) {
             return;
         }
@@ -195,10 +261,16 @@ export default class ThreeDemo {
         this.setUpLighting();
         this.setUpRenderer();
 
-        // 选择性添加所需的辅助工具
+        // 添加交互功能
+        await this.setUpInteractions();
+
+        // 添加辅助工具
         this.addAxesHelper();
         this.addGridHelper(200, 20);
         this.addCameraHelper(this.camera);
+
+        // 添加 GUI 控制面板
+        this.setUpGUI();
 
         // 将渲染器的 DOM 元素附加到网页上
         document.body.appendChild(this.renderer.domElement);
