@@ -23,7 +23,7 @@ function renderCube(demo, material, position, initialRotation = {
     // 设置立方体位置和初始旋转角度
     cube.position.copy(position);
     cube.rotation.set(initialRotation.x, initialRotation.y, initialRotation.z);
-
+    setupMouseControls(cube)
     // 将立方体添加到场景中
     demo.scene.add(cube);
 }
@@ -117,7 +117,6 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
  */
 async function loadTexturesFromAtlas(atlasPrefix, tilesNum) {
     const textures = [];
-
     // 遍历所需贴图数量，依次加载每个贴图
     for (let i = 1; i <= tilesNum; i++) {
         const url = `${atlasPrefix}${i}.png`;
@@ -147,11 +146,23 @@ function loadImage(imageUrl) {
 
 // 示例用法
 const demo = new ThreeDemo();
-demo.init()
-// renderCube(demo, new THREE.MeshBasicMaterial({
-//     color: 0xffffff
+demo.init({
+    ...demo.config,
+    // isSetUpInteractions: false,
+    // isAddAxesHelper: false,
+    // isAddGridHelper: false,
+    // isAddCameraHelper: false,
+    // isSetUpGUI: false
+})
+// renderCube(demo,new THREE.MeshBasicMaterial({
+//     color: 0xfddff2
 // }), new THREE.Vector3(0, 0, 0));
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
-// renderCubeWithSingleTexture(demo, 'src/image/textures/3.png');
-await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6);
+renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(0, 0, 0));
+renderCubeWithSingleTexture(demo, 'src/image/textures/2.png', new THREE.Vector3(6, 0, 0));
+renderCubeWithSingleTexture(demo, 'src/image/textures/3.png', new THREE.Vector3(0, 6, 0));
+renderCubeWithSingleTexture(demo, 'src/image/textures/4.png', new THREE.Vector3(6, 6, 0));
+renderCubeWithSingleTexture(demo, 'src/image/textures/5.png', new THREE.Vector3(-6, 6, 0));
+renderCubeWithSingleTexture(demo, 'src/image/textures/6.png', new THREE.Vector3(-6, 0, 0));
+await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 12, 0));

@@ -29,7 +29,13 @@ export default class ThreeDemo {
         this.camera = null;
         this.light = null;
         this.renderer = null;
-
+        this.config = {
+            isSetUpInteractions: true,
+            isAddAxesHelper: true,
+            isAddGridHelper: true,
+            isAddCameraHelper: true,
+            isSetUpGUI: true
+        }
         // 检查 WebGL 是否可用
         if (!WebGL.isWebGLAvailable()) {
             const warning = WebGL.getWebGLErrorMessage();
@@ -246,7 +252,9 @@ export default class ThreeDemo {
      */
     animate() {
         requestAnimationFrame(() => {
-            this.update();
+            if (this.config.isSetUpInteractions) {
+                this.update();
+            }
             this.renderer.render(this.scene, this.camera);
             this.animate();
         });
@@ -255,7 +263,11 @@ export default class ThreeDemo {
     /**
      * 初始化整个场景，包括设置渲染器、相机、灯光、场景本身，以及添加辅助工具、交互功能和 GUI 控制面板。
      */
-    async init() {
+    async init(config) {
+        //修改默认配置
+        if (config) {
+            this.config = config
+        }
         if (!WebGL.isWebGLAvailable()) {
             return;
         }
@@ -266,17 +278,27 @@ export default class ThreeDemo {
         this.setUpRenderer();
 
         // 添加交互功能
-        await this.setUpInteractions();
+        if (this.config.isSetUpInteractions) {
+            await this.setUpInteractions();
+        }
 
         // 添加辅助工具
-        this.addAxesHelper();
-        this.addGridHelper(200, 20);
-        this.addCameraHelper(this.camera);
+        if (this.config.isAddAxesHelper) {
+            await this.addAxesHelper();
+        }
+        if (this.config.isAddGridHelper) {
+            this.addGridHelper(200, 20);
+        }
+        if (this.config.isAddCameraHelper) {
+            this.addCameraHelper(this.camera);
+        }
 
         // 添加 GUI 控制面板
-        this.setUpGUI();
+        if (this.config.isSetUpGUI) {
+            this.setUpGUI();
+        }
 
-        // 将渲染器的 DOM 元素附加到网页上
+        // 将渲染器的 DOM 元素附加到容器上上
         document.getElementById('container').appendChild(this.renderer.domElement);
         // 启动渲染循环
         this.animate();
