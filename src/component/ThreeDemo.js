@@ -1,8 +1,15 @@
 import * as THREE from 'three';
 import {
-    setupMouseControls
+    setupMouseControls,
+    setupAutoRotate
 } from '../utils/three.js/MouseControls'
 import ThreeDemo from '../utils/three.js/Init'
+import {
+    GLTFLoader
+} from 'three/addons/loaders/GLTFLoader.js';
+import {
+    DRACOLoader
+} from 'three/addons/loaders/DRACOLoader.js';
 
 // 以下是一些辅助渲染函数，用于在ThreeDemo实例上渲染不同类型的3D对象
 /**
@@ -17,7 +24,7 @@ function renderCube(demo, material, position, initialRotation = {
     z: 0
 }) {
     // 创建立方体几何体和材质
-    const geometry = new THREE.BoxGeometry(5, 5, 5);
+    const geometry = new THREE.BoxGeometry(3, 3, 3);
     const cube = new THREE.Mesh(geometry, material);
 
     // 设置立方体位置和初始旋转角度
@@ -71,7 +78,7 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
         transparent: true,
         roughness: 0
     });
-    const geometry = new THREE.BoxGeometry(5, 5, 5);
+    const geometry = new THREE.BoxGeometry(3, 3, 3);
     const cube = new THREE.Mesh(geometry, material);
     cube.position.copy(position);
 
@@ -97,13 +104,14 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
     }));
 
     // 创建立方体几何体
-    const geometry = new THREE.BoxGeometry(5, 5, 5);
+    const geometry = new THREE.BoxGeometry(3, 3, 3);
 
     // 使用多材质创建立方体网格，并设置其位置
     const cube = new THREE.Mesh(geometry, materials);
     cube.position.copy(position);
 
     // 将立方体添加到场景中
+    setupAutoRotate(cube);
     demo.scene.add(cube);
     // setupMouseControls(cube);
 }
@@ -144,6 +152,47 @@ function loadImage(imageUrl) {
     });
 }
 
+/**
+ * 加载GLTF模型到指定的演示实例中。
+ * @param {Object} demo 演示实例，需要包含场景(scene)以及之后可能用到的动画混合器(AnimationMixer)。
+ */
+function loadGltfModel(demo) {
+    // 模型的URL地址
+    const modelUrl = 'src/model/gltf/LittlestTokyo.glb'
+    // DRACO解码器的路径
+    const dracoDecoderPath = 'src/libs/draco/'
+    
+    // 模型加载成功后的回调函数
+    const onModelLoaded = (gltf) => {
+        // 获取模型并设置其位置和缩放比例
+        const model = gltf.scene;
+        model.position.set(1, 1, 0);
+        model.scale.set(0.01, 0.01, 0.01);
+        // 将模型添加到演示场景中
+        demo.scene.add(model);
+        // 创建动画混合器并播放第一个动画
+        demo.mixer = new THREE.AnimationMixer(model);
+        demo.mixer.clipAction(gltf.animations[0]).play();
+    }
+    
+    // 模型加载失败时的错误处理函数
+    const onModelError = (e) => {
+        console.error(e);
+    }
+
+    // 初始化DRACO解码器
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath(dracoDecoderPath);
+    
+    // 初始化GLTF加载器并设置DRACO解码器
+    const loader = new GLTFLoader();
+    loader.setDRACOLoader(dracoLoader);
+    
+    // 加载模型，成功后调用onModelLoaded，失败后调用onModelError
+    loader.load(modelUrl, onModelLoaded, undefined, onModelError);
+}
+
+
 // 示例用法
 const demo = new ThreeDemo();
 demo.init({
@@ -159,10 +208,11 @@ demo.init({
 // }), new THREE.Vector3(0, 0, 0));
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
-renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(0, 0, 0));
-renderCubeWithSingleTexture(demo, 'src/image/textures/2.png', new THREE.Vector3(6, 0, 0));
-renderCubeWithSingleTexture(demo, 'src/image/textures/3.png', new THREE.Vector3(0, 6, 0));
-renderCubeWithSingleTexture(demo, 'src/image/textures/4.png', new THREE.Vector3(6, 6, 0));
-renderCubeWithSingleTexture(demo, 'src/image/textures/5.png', new THREE.Vector3(-6, 6, 0));
-renderCubeWithSingleTexture(demo, 'src/image/textures/6.png', new THREE.Vector3(-6, 0, 0));
-await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 12, 0));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/2.png', new THREE.Vector3(0, 6, 0));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/3.png', new THREE.Vector3(-6, 0, 0));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/4.png', new THREE.Vector3(0, -6, 0));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/5.png', new THREE.Vector3(0, 0, 6));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/6.png', new THREE.Vector3(0, 0, -6));
+await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
+loadGltfModel(demo)

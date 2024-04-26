@@ -1,130 +1,45 @@
 import * as THREE from 'three';
 import GUI from 'lil-gui';
 import WebGL from 'three/addons/capabilities/WebGL.js';
-
-// 动态导入 OrbitControls
-async function loadOrbitControls() {
-    const {
-        OrbitControls
-    } = await import('three/examples/jsm/controls/OrbitControls');
-    return OrbitControls;
-}
+import {
+    OrbitControls
+} from 'three/addons/controls/OrbitControls.js';
+import Stats from 'three/addons/libs/stats.module.js';
+import {
+    RoomEnvironment
+} from 'three/addons/environments/RoomEnvironment.js';
 
 /**
  * 一个用于创建和管理 Three.js 场景的基类。
  */
 export default class ThreeDemo {
-    /**
-     * 构造函数，初始化类的基本属性。
-     */
-    constructor() {
-        // 获取当前浏览器窗口的尺寸和设备像素比
+    constructor(containerId = "container") {
+        this.container = document.getElementById(containerId);
         this.width = window.innerWidth;
         this.height = window.innerHeight;
         this.aspectRatio = this.width / this.height;
         this.devicePixelRatio = window.devicePixelRatio;
-
-        // 初始化对象属性
         this.scene = null;
         this.camera = null;
         this.light = null;
         this.renderer = null;
+        this.mixer = null;
+        this.clock = new THREE.Clock();
+        this.stats = new Stats();
+        this.controls = null;
         this.config = {
-            isSetUpInteractions: true,
+            isSetUpControls: true,
             isAddAxesHelper: true,
             isAddGridHelper: true,
             isAddCameraHelper: true,
-            isSetUpGUI: true
-        }
-        // 检查 WebGL 是否可用
+            isSetUpGUI: true,
+        };
+
         if (!WebGL.isWebGLAvailable()) {
             const warning = WebGL.getWebGLErrorMessage();
-            document.getElementById('container').appendChild(warning);
-            throw new Error('WebGL is not available.');
+            this.container.appendChild(warning);
+            throw new Error("WebGL is not available.");
         }
-    }
-
-    /**
-     * 设置并配置 WebGL 渲染器。
-     */
-    setUpRenderer() {
-        this.renderer = new THREE.WebGLRenderer({
-            antialias: true,
-        });
-
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
-        this.renderer.setSize(this.width, this.height);
-        this.renderer.setPixelRatio(this.devicePixelRatio);
-
-        // 设置渲染器背景颜色为雾的颜色
-        this.renderer.setClearColor(this.scene.fog.color);
-
-        // 添加窗口 resize 事件监听器，动态调整渲染器和相机尺寸
-        window.addEventListener('resize', () => {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-    }
-
-    /**
-     * 创建并配置透视相机。
-     */
-    setUpCamera() {
-        this.camera = new THREE.PerspectiveCamera(
-            90, // 视角（垂直视角）
-            this.aspectRatio, // 窗口宽高比
-            0.1, // 近裁剪面距离
-            100 // 远裁剪面距离
-        );
-
-        this.camera.position.set(5, 2, 8); // 设置相机初始位置
-        this.camera.aspect = this.aspectRatio; // 更新相机宽高比（可能已改变）
-        this.camera.updateProjectionMatrix(); // 应用新的投影矩阵
-
-        // 将相机添加到场景中
-        this.scene.add(this.camera);
-    }
-
-    /**
-     * 创建并配置场景照明。
-     */
-    setUpLighting() {
-        // 创建环境光，提供全局、柔和的光照效果
-        this.light = new THREE.AmbientLight(0x404040);
-
-        // 创建定向光，模拟来自特定方向的强烈光照
-        this.directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-        this.directionalLight.position.set(0, 5, 5); // 设置光源方向
-
-        // 将灯光添加到场景中
-        this.scene.add(this.light);
-        this.scene.add(this.directionalLight);
-    }
-
-    /**
-     * 创建并配置场景本身，包括雾效。
-     */
-    setUpScene() {
-        this.scene = new THREE.Scene();
-
-        // 添加雾效，模拟远处物体逐渐消失的效果
-        this.scene.fog = new THREE.Fog(0x090918, 1, 600); // 雾的颜色、开始距离和结束距离
-    }
-
-    /**
-     * 初始化交互功能（使用 OrbitControls）。
-     */
-    async setUpInteractions() {
-        console.log('setUpInteractions() called');
-        const OrbitControls = await loadOrbitControls();
-        console.log('OrbitControls loaded:', OrbitControls);
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
-        console.log('OrbitControls instantiated:', this.controls);
-        this.controls.enableDamping = true; // 启用阻尼（平滑过渡）
-        this.controls.dampingFactor = 0.05; // 设置阻尼系数
-        this.controls.enableZoom = true; // 启用缩放
-        console.log('Renderer DOM element:', this.renderer.domElement);
     }
 
     /**
@@ -163,12 +78,6 @@ export default class ThreeDemo {
         });
     }
 
-    /**
-     * 更新方法，用于在每一帧中更新交互控制器和可能需要实时更新的对象。
-     */
-    update() {
-        this.controls.update(); // 更新 OrbitControls
-    }
 
     /**
      * 添加坐标轴辅助线，帮助识别场景中 XYZ 坐标的方向。
@@ -247,27 +156,85 @@ export default class ThreeDemo {
         this.scene.add(cameraHelper);
     }
 
-    /**
-     * 启动渲染循环，不断更新并呈现场景。
-     */
+    handleWindowResize() {
+        window.addEventListener("resize", () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    setUpRenderer() {
+        this.renderer = new THREE.WebGLRenderer({
+            antialias: true
+        });
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.setSize(this.width, this.height);
+        this.renderer.setPixelRatio(this.devicePixelRatio);
+        this.renderer.setClearColor(this.scene.fog.color);
+    }
+
+    setUpStats() {
+        this.container.appendChild(this.stats.dom);
+    }
+
+    setUpCamera() {
+        this.camera = new THREE.PerspectiveCamera(90, this.aspectRatio, 0.1, 100);
+        this.camera.position.set(5, 2, 8);
+        this.camera.aspect = this.aspectRatio;
+        this.camera.updateProjectionMatrix();
+        this.scene.add(this.camera);
+    }
+
+    setUpLighting() {
+        this.light = new THREE.AmbientLight(4210752);
+        this.directionalLight = new THREE.DirectionalLight(16777215, 0.6);
+        this.directionalLight.position.set(0, 5, 5);
+        this.scene.add(this.light);
+        this.scene.add(this.directionalLight);
+    }
+
+    async setUpControls() {
+        this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+        this.controls.enableDamping = true;
+        this.controls.dampingFactor = 0.05;
+        this.controls.enableZoom = true;
+    }
+
+    async setUpEnvironment() {
+        const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
+        this.scene.environment = pmremGenerator.fromScene(
+            new RoomEnvironment(this.renderer),
+            0.04
+        ).texture;
+    }
+
+    setUpScene() {
+        this.scene = new THREE.Scene();
+        this.scene.fog = new THREE.Fog(592152, 1, 600);
+        this.scene.background = new THREE.Color(12575709);
+    }
+
     animate() {
         requestAnimationFrame(() => {
-            if (this.config.isSetUpInteractions) {
-                this.update();
+            const delta = this.clock.getDelta();
+
+            if (this.mixer) {
+                this.mixer.update(delta);
             }
+
+            this.controls.update();
+            this.stats.update();
             this.renderer.render(this.scene, this.camera);
             this.animate();
         });
     }
 
-    /**
-     * 初始化整个场景，包括设置渲染器、相机、灯光、场景本身，以及添加辅助工具、交互功能和 GUI 控制面板。
-     */
     async init(config) {
-        //修改默认配置
         if (config) {
-            this.config = config
+            this.config = config;
         }
+
         if (!WebGL.isWebGLAvailable()) {
             return;
         }
@@ -277,31 +244,30 @@ export default class ThreeDemo {
         this.setUpLighting();
         this.setUpRenderer();
 
-        // 添加交互功能
-        if (this.config.isSetUpInteractions) {
-            await this.setUpInteractions();
+        if (this.config.isSetUpControls) {
+            await this.setUpControls();
         }
 
-        // 添加辅助工具
         if (this.config.isAddAxesHelper) {
             await this.addAxesHelper();
         }
+
         if (this.config.isAddGridHelper) {
             this.addGridHelper(200, 20);
         }
+
         if (this.config.isAddCameraHelper) {
             this.addCameraHelper(this.camera);
         }
 
-        // 添加 GUI 控制面板
         if (this.config.isSetUpGUI) {
             this.setUpGUI();
         }
 
-        // 将渲染器的 DOM 元素附加到容器上上
-        document.getElementById('container').appendChild(this.renderer.domElement);
-        // 启动渲染循环
+        this.handleWindowResize();
+        this.setUpStats();
+        this.setUpEnvironment();
         this.animate();
-        console.log('Renderer DOM element attached:', document.body.contains(this.renderer.domElement));
+        this.container.appendChild(this.renderer.domElement);
     }
 }

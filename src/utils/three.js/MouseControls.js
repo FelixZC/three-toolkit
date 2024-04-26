@@ -38,3 +38,19 @@ export function setupMouseControls(object3D, sensitivity = 0.005) {
     document.addEventListener('mouseup', onDocumentMouseUp);
   }
   
+/**
+ * 设置three立方体自旋转的事件监听器
+ */
+export function setupAutoRotate(object3D, speed = 0.001) {
+    let lastTime = 0;
+  
+    const onAnimationFrame = (time) => {
+      const deltaTime = time - lastTime;
+      object3D.rotation.x += speed * deltaTime;
+      object3D.rotation.y += speed * deltaTime;
+      lastTime = time;
+      requestAnimationFrame(onAnimationFrame);
+    };
+  
+    requestAnimationFrame(onAnimationFrame);
+}

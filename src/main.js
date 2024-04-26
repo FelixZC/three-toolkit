@@ -1,2 +1,2 @@
-// import './component/ThreeDemo'
-import './component/ThreeDemo2'
+import './component/ThreeDemo'
+// import './component/ThreeDemo2'
