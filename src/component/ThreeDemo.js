@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {
     setupMouseControls,
     setupAutoRotate
-} from '../utils/three.js/MouseControls'
+} from '../utils/three.js/animate'
 import ThreeDemo from '../utils/three.js/Init'
 import {
     GLTFLoader
