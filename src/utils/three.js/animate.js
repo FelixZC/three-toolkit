@@ -48,6 +48,7 @@ export function setupAutoRotate(object3D, speed = 0.001) {
       const deltaTime = time - lastTime;
       object3D.rotation.x += speed * deltaTime;
       object3D.rotation.y += speed * deltaTime;
+      object3D.rotation.z += speed * deltaTime;
       lastTime = time;
       requestAnimationFrame(onAnimationFrame);
     };

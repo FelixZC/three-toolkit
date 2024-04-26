@@ -212,7 +212,7 @@ export default class ThreeDemo {
     setUpScene() {
         this.scene = new THREE.Scene();
         this.scene.fog = new THREE.Fog(592152, 1, 600);
-        this.scene.background = new THREE.Color(12575709);
+        // this.scene.background = new THREE.Color(12575709);
     }
 
     animate() {
