@@ -10,31 +10,7 @@ import {
 import {
     DRACOLoader
 } from 'three/addons/loaders/DRACOLoader.js';
-
-// 以下是一些辅助渲染函数，用于在ThreeDemo实例上渲染不同类型的3D对象
-/**
- * 渲染一个正方体
- * @param {ThreeDemo} demo - ThreeDemo实例
- * @param {THREE.Material} [material] - 自定义材质
- * @param {THREE.Vector3} [position] - 自定义立方体位置
- */
-function renderCube(demo, material, position, initialRotation = {
-    x: 0,
-    y: 0,
-    z: 0
-}) {
-    // 创建立方体几何体和材质
-    const geometry = new THREE.BoxGeometry(3, 3, 3);
-    const cube = new THREE.Mesh(geometry, material);
-
-    // 设置立方体位置和初始旋转角度
-    cube.position.copy(position);
-    cube.rotation.set(initialRotation.x, initialRotation.y, initialRotation.z);
-    setupMouseControls(cube)
-    // 将立方体添加到场景中
-    demo.scene.add(cube);
-}
-
+import Firework from '../utils/three.js/Firework'
 /**
  * 渲染一条线
  * @param {ThreeDemo} demo - ThreeDemo实例
@@ -84,7 +60,7 @@ function renderCubeWithSingleTexture(demo, textureUrl, position = new THREE.Vect
 
     // 添加立方体到场景
     demo.scene.add(cube);
-    // setupMouseControls(cube);
+    setupMouseControls(cube);
 }
 
 /**
@@ -204,6 +180,36 @@ function loadGltfModel(demo) {
     loader.load(modelUrl, onModelLoaded, undefined, onModelError);
 }
 
+function addFireWork(demo) {
+    let fireworks = [];
+
+    function createFirework() {
+        const position = new THREE.Vector3(Math.random() * 10 - 5, 0, Math.random() * 10 - 5);
+        fireworks.push(new Firework(demo, position));
+    }
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const deltaTime = clock.getDelta(); // 假设你已经设置了clock
+        fireworks.forEach((fw, index) => {
+            fw.update(deltaTime);
+            if (fw.life <= 0) {
+                demo.scene.remove(fw.mesh);
+                fireworks.splice(index, 1);
+            }
+        });
+
+        // 定时发射烟花
+        if (Math.random() < 0.01) { // 每100帧发射一次
+            createFirework();
+        }
+    }
+
+    animate();
+}
+
+
 // 示例用法
 const demo = new ThreeDemo();
 demo.init({
@@ -222,4 +228,4 @@ demo.init({
 // renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
 await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 loadGltfModel(demo)
-addPoints(demo)
+addFireWork(demo)
