@@ -23,8 +23,6 @@ export default class ThreeDemo {
         this.camera = null;
         this.light = null;
         this.renderer = null;
-        this.mixer = null;
-        this.clock = new THREE.Clock();
         this.stats = new Stats();
         this.controls = null;
         this.config = {
@@ -217,12 +215,6 @@ export default class ThreeDemo {
 
     animate() {
         requestAnimationFrame(() => {
-            const delta = this.clock.getDelta();
-
-            if (this.mixer) {
-                this.mixer.update(delta);
-            }
-
             this.controls.update();
             this.stats.update();
             this.renderer.render(this.scene, this.camera);

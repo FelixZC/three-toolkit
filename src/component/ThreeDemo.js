@@ -161,7 +161,7 @@ function loadGltfModel(demo) {
     const modelUrl = 'src/model/gltf/LittlestTokyo.glb'
     // DRACO解码器的路径
     const dracoDecoderPath = 'src/libs/draco/'
-    
+
     // 模型加载成功后的回调函数
     const onModelLoaded = (gltf) => {
         // 获取模型并设置其位置和缩放比例
@@ -171,10 +171,22 @@ function loadGltfModel(demo) {
         // 将模型添加到演示场景中
         demo.scene.add(model);
         // 创建动画混合器并播放第一个动画
-        demo.mixer = new THREE.AnimationMixer(model);
-        demo.mixer.clipAction(gltf.animations[0]).play();
+        const clock = new THREE.Clock();
+        const mixer = new THREE.AnimationMixer(model);
+        mixer.clipAction(gltf.animations[0]).play();
+        /**
+         * 添加模型动画
+         */
+        function animate() {
+            requestAnimationFrame(() => {
+                const delta = clock.getDelta();
+                mixer.update(delta);
+                animate();
+            });
+        }
+        animate()
     }
-    
+
     // 模型加载失败时的错误处理函数
     const onModelError = (e) => {
         console.error(e);
@@ -183,15 +195,14 @@ function loadGltfModel(demo) {
     // 初始化DRACO解码器
     const dracoLoader = new DRACOLoader();
     dracoLoader.setDecoderPath(dracoDecoderPath);
-    
+
     // 初始化GLTF加载器并设置DRACO解码器
     const loader = new GLTFLoader();
     loader.setDRACOLoader(dracoLoader);
-    
+
     // 加载模型，成功后调用onModelLoaded，失败后调用onModelError
     loader.load(modelUrl, onModelLoaded, undefined, onModelError);
 }
-
 
 // 示例用法
 const demo = new ThreeDemo();
@@ -209,10 +220,6 @@ demo.init({
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
 // renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
-// renderCubeWithSingleTexture(demo, 'src/image/textures/2.png', new THREE.Vector3(0, 6, 0));
-// renderCubeWithSingleTexture(demo, 'src/image/textures/3.png', new THREE.Vector3(-6, 0, 0));
-// renderCubeWithSingleTexture(demo, 'src/image/textures/4.png', new THREE.Vector3(0, -6, 0));
-// renderCubeWithSingleTexture(demo, 'src/image/textures/5.png', new THREE.Vector3(0, 0, 6));
-// renderCubeWithSingleTexture(demo, 'src/image/textures/6.png', new THREE.Vector3(0, 0, -6));
 await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 loadGltfModel(demo)
+addPoints(demo)
