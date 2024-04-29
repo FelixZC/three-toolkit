@@ -11,6 +11,9 @@ import {
     DRACOLoader
 } from 'three/addons/loaders/DRACOLoader.js';
 import Firework from '../utils/three.js/Firework'
+
+import vertexShaderSource from '../glsl/VertexShader.glsl?raw';
+import fragmentShaderSource from '../glsl//FragmentShader.glsl?raw';
 /**
  * 渲染一条线
  * @param {ThreeDemo} demo - ThreeDemo实例
@@ -134,9 +137,9 @@ function loadImage(imageUrl) {
  */
 function loadGltfModel(demo) {
     // 模型的URL地址
-    const modelUrl = '/src/model/gltf/LittlestTokyo.glb'
+    const modelUrl = 'src/model/gltf/LittlestTokyo.glb'
     // DRACO解码器的路径
-    const dracoDecoderPath = '/src/libs/draco/'
+    const dracoDecoderPath = 'src/libs/draco/'
 
     // 模型加载成功后的回调函数
     const onModelLoaded = (gltf) => {
@@ -224,33 +227,101 @@ function addFireWork(demo) {
 }
 
 
-
+/**
+ * 在给定的场景中添加指定数量的星星。
+ * @param {Object} demo 包含场景(scene)等Three.js相关对象和数据的示例对象。
+ * @param {number} count 要添加的星星数量。
+ */
 function addStars(demo, count) {
     // 加载星星纹理
     const textureLoader = new THREE.TextureLoader();
-    const starTexture = textureLoader.load('/src/image/textures/star_texture.png'); // 请替换为你的星星纹理路径
+    const starTexture = textureLoader.load('src/image/textures/smoke_texture.png'); // 替换为实际星星纹理的路径
 
     // 创建星星材质
     const starMaterial = new THREE.PointsMaterial({
         map: starTexture,
-        size: 0.1, // 根据需要调整星星大小
+        size: 0.1, // 可根据需要调整星星的大小
         color: 0xffffff,
         transparent: true,
         blending: THREE.AdditiveBlending, // 使用加性混合让星星更亮
     });
+
+    // 循环创建指定数量的星星并添加到场景中
     for (let i = 0; i < count; i++) {
-        const geometry = new THREE.SphereGeometry(0.01, 32, 32); // 小球几何体作为星星
+        const geometry = new THREE.SphereGeometry(0.01, 32, 32); // 使用小球几何体作为星星的形状
         const star = new THREE.Points(geometry, starMaterial);
 
-        // 随机分布星星的位置
+        // 随机定位星星
         const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(1000)); // 调整范围以适应你的场景大小
         star.position.set(x, y, z);
 
         demo.scene.add(star);
     }
-
 }
+/**
+ * 为指定的Three.js演示demo添加烟雾效果。
+ * 不知道为什么就是无法引入顶点着色器和片段着色器
+ * @param {Object} demo 包含场景(scene)等Three.js演示相关对象的容器。
+ */
+function addSmoke(demo) {
+    // 加载烟雾纹理
+    const smokeTextureLoader = new THREE.TextureLoader();
+    smokeTextureLoader.load('src/image/textures/smoke_texture.png', (texture) => {
+        texture.minFilter = THREE.LinearFilter;
+        
+        // 创建烟雾材质
+        const smokeMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+                time: {
+                    value: 0
+                },
+                color: {
+                    value: new THREE.Color(0x888888)
+                },
+                opacity: {
+                    value: 0.6
+                },
+                texture: {
+                    value: texture
+                }
+            },
+            vertexShader: vertexShaderSource,
+            fragmentShader: fragmentShaderSource,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            transparent: true
+        });
 
+        // 创建粒子几何体和粒子系统
+        const numParticles = 1000;
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(numParticles * 3);
+        const colors = new Float32Array(numParticles * 3);
+
+        // 随机生成粒子位置和颜色
+        for (let i = 0; i < numParticles; i++) {
+            const x = (Math.random() - 0.5) * 200;
+            const y = (Math.random() - 0.5) * 200;
+            const z = (Math.random() - 0.5) * 200;
+            positions.set([x, y, z], i * 3);
+            colors.set([x / 100 + 0.9, y / 100 + 0.9, z / 100 + 0.9], i * 3);
+        }
+
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+        // 创建并添加烟雾粒子系统到场景
+        const smokeParticles = new THREE.Points(geometry, smokeMaterial);
+        demo.scene.add(smokeParticles);
+
+        // 动画烟雾粒子
+        function animate() {
+            requestAnimationFrame(animate);
+            smokeMaterial.uniforms.time.value += 0.01;
+        }
+        animate();
+    });
+}
 
 
 // 示例用法
@@ -263,14 +334,13 @@ demo.init({
     // isAddCameraHelper: false,
     // isSetUpGUI: false
 })
-// renderCube(demo,new THREE.MeshBasicMaterial({
-//     color: 0xfddff2
-// }), new THREE.Vector3(0, 0, 0));
+
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
-// renderCubeWithSingleTexture(demo, '/src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
-await renderCubeWithMultipleTextures(demo, '/src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
+// renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
+await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 loadGltfModel(demo)
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
+// addSmoke(demo)
