@@ -134,9 +134,9 @@ function loadImage(imageUrl) {
  */
 function loadGltfModel(demo) {
     // 模型的URL地址
-    const modelUrl = 'src/model/gltf/LittlestTokyo.glb'
+    const modelUrl = '/src/model/gltf/LittlestTokyo.glb'
     // DRACO解码器的路径
-    const dracoDecoderPath = 'src/libs/draco/'
+    const dracoDecoderPath = '/src/libs/draco/'
 
     // 模型加载成功后的回调函数
     const onModelLoaded = (gltf) => {
@@ -180,34 +180,77 @@ function loadGltfModel(demo) {
     loader.load(modelUrl, onModelLoaded, undefined, onModelError);
 }
 
+/**
+ * 向场景中添加烟花效果。
+ * @param {Object} demo - 包含场景(scene)等THREE.js相关对象的示例实例，用于添加和管理烟花对象。
+ */
 function addFireWork(demo) {
-    let fireworks = [];
+    let fireworks = []; // 存储所有烟花对象的数组
 
+    /**
+     * 创建并初始化一个烟花对象。
+     */
     function createFirework() {
+        // 随机生成烟花的初始位置
         const position = new THREE.Vector3(Math.random() * 10 - 5, 0, Math.random() * 10 - 5);
-        fireworks.push(new Firework(demo, position));
+        fireworks.push(new Firework(demo, position)); // 将新创建的烟花添加到数组中
     }
-    const clock = new THREE.Clock();
 
+    const clock = new THREE.Clock(); // 用于动画的时钟控制
+
+    /**
+     * 烟花动画循环函数。
+     */
     function animate() {
-        requestAnimationFrame(animate);
-        const deltaTime = clock.getDelta(); // 假设你已经设置了clock
+        requestAnimationFrame(animate); // 下一帧动画的请求
+        const deltaTime = clock.getDelta(); // 获取自上一帧以来的时间差
+
+        // 更新所有烟花的状态，并移除已经结束的烟花
         fireworks.forEach((fw, index) => {
             fw.update(deltaTime);
             if (fw.life <= 0) {
-                demo.scene.remove(fw.mesh);
-                fireworks.splice(index, 1);
+                demo.scene.remove(fw.mesh); // 从场景中移除烟花
+                fireworks.splice(index, 1); // 从数组中移除已结束的烟花对象
             }
         });
 
-        // 定时发射烟花
-        if (Math.random() < 0.01) { // 每100帧发射一次
+        // 随机决定是否发射新的烟花
+        if (Math.random() < 0.01) { // 每100帧发射一次烟花的概率
             createFirework();
         }
     }
 
-    animate();
+    animate(); // 启动动画循环
 }
+
+
+
+function addStars(demo, count) {
+    // 加载星星纹理
+    const textureLoader = new THREE.TextureLoader();
+    const starTexture = textureLoader.load('/src/image/textures/star_texture.png'); // 请替换为你的星星纹理路径
+
+    // 创建星星材质
+    const starMaterial = new THREE.PointsMaterial({
+        map: starTexture,
+        size: 0.1, // 根据需要调整星星大小
+        color: 0xffffff,
+        transparent: true,
+        blending: THREE.AdditiveBlending, // 使用加性混合让星星更亮
+    });
+    for (let i = 0; i < count; i++) {
+        const geometry = new THREE.SphereGeometry(0.01, 32, 32); // 小球几何体作为星星
+        const star = new THREE.Points(geometry, starMaterial);
+
+        // 随机分布星星的位置
+        const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(1000)); // 调整范围以适应你的场景大小
+        star.position.set(x, y, z);
+
+        demo.scene.add(star);
+    }
+
+}
+
 
 
 // 示例用法
@@ -225,7 +268,9 @@ demo.init({
 // }), new THREE.Vector3(0, 0, 0));
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
-// renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
-await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
+// renderCubeWithSingleTexture(demo, '/src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
+await renderCubeWithMultipleTextures(demo, '/src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 loadGltfModel(demo)
 addFireWork(demo)
+// 添加一定数量的星星
+addStars(demo, 1000); // 数量根据实际情况调整
