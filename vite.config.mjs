@@ -1,5 +1,8 @@
-import { defineConfig } from 'vite';
+import {
+  defineConfig
+} from 'vite';
 
+import glsl from "vite-plugin-glsl";
 export default defineConfig({
   build: {
     target: 'esnext',
@@ -9,4 +12,5 @@ export default defineConfig({
   optimizeDeps: {
     include: ['three'],
   },
+  plugins: [glsl()],
 });

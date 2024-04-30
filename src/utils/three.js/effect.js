@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import vertexShaderSource from '../../glsl/vertex-shader.glsl?raw';
-import fragmentShaderSource from '../../glsl/fragment-shader.glsl?raw';
+import vertexShaderSource from '../../glsl/vertex-shader.glsl';
+import fragmentShaderSource from '../../glsl/fragment-shader.glsl';
 
 class Firework {
     constructor(demo, position) {

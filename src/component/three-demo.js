@@ -295,8 +295,8 @@ demo.init({
 // renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
 await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 loadGltfModel(demo)
-addFireWork(demo)
+// addFireWork(demo)
 // 添加一定数量的星星
-addStars(demo, 1000); // 数量根据实际情况调整
-// addSmoke(demo)
+// addStars(demo, 1000); // 数量根据实际情况调整
+addSmoke(demo)
 physicsTest(demo)
