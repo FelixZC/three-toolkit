@@ -94,7 +94,6 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
     // 将立方体添加到场景中
     setupAutoRotate(cube);
     demo.scene.add(cube);
-    // setupMouseControls(cube);
 }
 
 /**
@@ -445,11 +444,11 @@ function physicsTest(demo) {
 const demo = new ThreeDemo();
 demo.init({
     ...demo.config,
-    // isSetUpInteractions: false,
     // isAddAxesHelper: false,
     // isAddGridHelper: false,
     // isAddCameraHelper: false,
-    // isSetUpGUI: false
+    // isSetUpGUI: false,
+    // isSetUpControls: false
 })
 
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
@@ -457,7 +456,7 @@ demo.init({
 // renderCubeWithSingleTexture(demo, 'src/image/textures/1.png', new THREE.Vector3(6, 0, 0));
 await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 loadGltfModel(demo)
-// addFireWork(demo)
+addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
 // addSmoke(demo)
