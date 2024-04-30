@@ -7,6 +7,6 @@ export default defineConfig({
     sourcemap: true,
   },
   optimizeDeps: {
-    include: ['three', 'three/examples/jsm/controls/OrbitControls'],
+    include: ['three'],
   },
 });
