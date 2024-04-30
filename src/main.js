@@ -1,1 +1,1 @@
-import './component/ThreeDemo'
+import './component/three-demo'
