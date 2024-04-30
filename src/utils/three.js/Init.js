@@ -8,6 +8,9 @@ import Stats from 'three/addons/libs/stats.module.js';
 import {
     RoomEnvironment
 } from 'three/addons/environments/RoomEnvironment.js';
+import {
+    update
+} from 'three/examples/jsm/libs/tween.module.js';
 
 /**
  * 一个用于创建和管理 Three.js 场景的基类。
@@ -215,7 +218,6 @@ export default class ThreeDemo {
 
     animate() {
         requestAnimationFrame(() => {
-            this.controls.update();
             this.stats.update();
             this.renderer.render(this.scene, this.camera);
             this.animate();
@@ -238,6 +240,14 @@ export default class ThreeDemo {
 
         if (this.config.isSetUpControls) {
             await this.setUpControls();
+
+            function updateControls() {
+                requestAnimationFrame(() => {
+                    this.controls.update();
+                    this.updateControls();
+                });
+            }
+            updateControls()
         }
 
         if (this.config.isAddAxesHelper) {
