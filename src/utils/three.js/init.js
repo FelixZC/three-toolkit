@@ -221,11 +221,12 @@ export default class ThreeDemo {
      */
     setUpLighting() {
         // 添加环境光和方向光到场景中
-        const light = new THREE.AmbientLight(4210752);
-        this.directionalLight = new THREE.DirectionalLight(16777215, 0.6);
-        this.directionalLight.position.set(0, 5, 5);
+        const light = new THREE.AmbientLight(0xffffff, 2);
+        this.directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+        this.directionalLight.position.set(1, 1, 1).normalize();
         this.scene.add(light);
         this.scene.add(this.directionalLight);
+
     }
 
     /**
