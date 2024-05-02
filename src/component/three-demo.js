@@ -164,28 +164,42 @@ function loadGltfModel(demo) {
 }
 
 /**
- * 创建一个物理测试环境，演示一个立方体从空中掉落至地面的过程。
- * @param {Object} demo 包含场景(scene)等Three.js相关对象和设置的参数对象。
+ * 物理学测试函数 - 利用Three.js和Cannon.js创建一个简单的物理模拟场景
+ * @param {Object} demo - 包含场景、相机和渲染器的对象
  */
 function physicsTest(demo) {
+    /**
+     * 初始化场景、相机和渲染器
+     * 使用demo对象中已定义的场景、相机和渲染器
+     */
+
     const scene = demo.scene;
     const camera = demo.camera;
     const renderer = demo.renderer;
 
-    // 创建地面几何体和材质
+    /**
+     * 创建地面几何体和材质
+     * 地面为一个长宽为25单位的立方体，高度为0.1单位
+     * 使用MeshStandardMaterial材质，颜色为灰色
+     */
     const groundGeo = new THREE.BoxGeometry(25, 0.1, 25);
     const groundMaterial = new THREE.MeshStandardMaterial({
         color: 0x808080
     });
 
-    // 初始化Cannon.js物理世界
+    /**
+     * 初始化Cannon.js物理世界
+     * 设置重力为向下的9.82 m/s^2，并使用简单的碰撞检测方法
+     */
     const world = new CANNON.World();
     world.gravity.set(0, -9.82, 0);
     world.broadphase = new CANNON.NaiveBroadphase();
 
-    // 定义地面物理材质
+    /**
+     * 定义地面物理材质并创建地面物理体
+     * 地面物理体质量为0，不参与碰撞但可以被碰撞
+     */
     const groundPhysMat = new CANNON.Material("GroundPhysMaterial");
-    // 创建地面物理体
     const groundBody = new CANNON.Body({
         mass: 0,
         material: groundPhysMat
@@ -194,34 +208,58 @@ function physicsTest(demo) {
     groundBody.position.set(0, -1.1, 0);
     world.addBody(groundBody);
 
-    // 创建地面Three.js网格
+    /**
+     * 创建地面的Three.js网格并设置属性
+     * 地面网格能够接收阴影，并与物理体位置同步
+     */
     const groundMesh = new THREE.Mesh(groundGeo, groundMaterial);
     groundMesh.receiveShadow = true;
     groundMesh.position.copy(groundBody.position);
     scene.add(groundMesh);
 
-    // 立方体材质与物理体
+    /**
+     * 创建立方体几何体和材质
+     * 立方体边长为1单位，使用红色的MeshStandardMaterial材质
+     */
     const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
     const cubeMaterial = new THREE.MeshStandardMaterial({
         color: 0xff0000
     });
+
+    /**
+     * 创建立方体物理体并添加到物理世界
+     * 立方体质量为1，初始位置设置在(5, 5, 5)
+     */
     const cubeBody = new CANNON.Body({
         mass: 1
     });
     cubeBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
     cubeBody.position.set(5, 5, 5);
     world.addBody(cubeBody);
+
+    /**
+     * 创建立方体的Three.js网格并设置属性
+     * 立方体网格投射阴影，并与物理体位置同步
+     */
     const cubeMesh = new THREE.Mesh(cubeGeo, cubeMaterial);
     cubeMesh.castShadow = true;
     cubeMesh.position.copy(cubeBody.position);
     scene.add(cubeMesh);
 
-    // 球体材质与物理体
+    /**
+     * 创建球体几何体和材质
+     * 球体半径为0.5单位，使用绿色的MeshStandardMaterial材质
+     */
     const sphereRadius = 0.5;
     const sphereGeo = new THREE.SphereGeometry(sphereRadius, 32, 32);
     const sphereMaterial = new THREE.MeshStandardMaterial({
         color: 0x00ff00
     });
+
+    /**
+     * 创建球体物理材质和与地面的碰撞材质
+     * 设置球体与地面碰撞时的摩擦系数和弹性
+     */
     const spherePhysMat = new CANNON.Material("SpherePhysMaterial");
     const sphereGroundContactMat = new CANNON.ContactMaterial(
         spherePhysMat,
@@ -231,69 +269,104 @@ function physicsTest(demo) {
         }
     );
     world.addContactMaterial(sphereGroundContactMat);
+
+    /**
+     * 创建一个具有指定质量和材料的球体物理体，并将其添加到物理世界中。
+     * 同时，创建一个球体的三维模型，并将其添加到场景中。
+     */
     const sphereBody = new CANNON.Body({
-        mass: 1,
-        material: spherePhysMat
+        mass: 1, // 球体的质量
+        material: spherePhysMat // 球体的物理材料
     });
     sphereBody.addShape(new CANNON.Sphere(sphereRadius));
+    // 设置球体的初始位置和速度，以及角速度
     sphereBody.position.set(-4, 10, 2);
     sphereBody.velocity.set(0, -5, 0);
     sphereBody.angularVelocity.set(0, 0.1, 1);
+    // 将球体物理体添加到物理世界
     world.addBody(sphereBody);
+    // 创建球体的三维模型，并设置其属性
     const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
-    sphereMesh.castShadow = true;
+    sphereMesh.castShadow = true; // 球体可以投射阴影
+    // 将三维模型的位置与物理体的位置同步
     sphereMesh.position.copy(sphereBody.position);
+    // 将球体模型添加到场景中
     scene.add(sphereMesh);
 
     // 鼠标点击事件处理
     let ballBodies = [];
+    /**
+     * 当鼠标在渲染器的dom元素上按下时的事件监听器。
+     * 该函数主要负责在地面位置创建一个物理球体，并将其同时渲染为一个视觉球体。
+     * 
+     * @param {MouseEvent} event 鼠标事件对象，包含了鼠标按下的详细信息。
+     */
     renderer.domElement.addEventListener('mousedown', (event) => {
+        // 当鼠标左键按下时
         if (event.button === 0) {
+            // 创建一个物理球体
             const sphereShape = new CANNON.Sphere(0.5);
             const ballBody = new CANNON.Body({
-                mass: 1,
-                material: spherePhysMat
+                mass: 1, // 球体的质量
+                material: spherePhysMat // 球体的物理材质
             });
             ballBody.addShape(sphereShape);
 
+            // 使用Three.js的Raycaster来计算鼠标位置和场景中物体的交点
             const raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(
                 new THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1),
                 camera
             );
+
+            // 检测鼠标点击是否与地面相交
             const intersections = raycaster.intersectObject(groundMesh);
             if (intersections.length > 0) {
+                // 如果相交，将球体位置设置为相交点位置
                 ballBody.position.copy(intersections[0].point);
             } else {
-                console.log("No intersection with the ground.");
+                console.log("No intersection with the ground."); // 如果没有相交，打印错误信息并返回
                 return;
             }
 
+            // 将物理球体添加到物理世界
             world.addBody(ballBody);
-            ballBodies.push(ballBody);
+            ballBodies.push(ballBody); // 将球体添加到球体数组
 
+            // 创建球体的Three.js网格模型
             const sphereGeometry = new THREE.SphereGeometry(sphereShape.radius, 32, 32);
             const ballMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            ballMesh.position.copy(ballBody.position);
-            scene.add(ballMesh);
-            ballMesh.userData.cannonBody = ballBody;
+            ballMesh.position.copy(ballBody.position); // 将网格模型的位置设置为物理球体的位置
+            scene.add(ballMesh); // 将网格模型添加到场景中
+            ballMesh.userData.cannonBody = ballBody; // 将物理球体与网格模型关联
         }
     });
 
+    /**
+     * 该函数用于实现动画循环。
+     * 它通过调用requestAnimationFrame来递归自身，以在每一帧中更新物理世界的状态，并将物理模拟的结果应用到场景中的图形网格。
+     */
     function animate() {
+        // 请求下一帧动画
         requestAnimationFrame(animate);
 
-        world.step(1 / 60);
+        // 更新物理世界的状态
+        world.step(1 / 60); // 步进物理模拟，参数为时间步长
 
+        // 更新球体网格的位置和旋转，以匹配其物理体的状态
         sphereMesh.position.copy(sphereBody.position);
         sphereMesh.quaternion.copy(sphereBody.quaternion);
 
+        // 更新立方体网格的位置和旋转，以匹配其物理体的状态
         cubeMesh.position.copy(cubeBody.position);
         cubeMesh.quaternion.copy(cubeBody.quaternion);
 
+        // 遍历球体集合，更新每个球体网格的位置和旋转，以匹配其对应的物理体状态
         ballBodies.forEach((body, index) => {
+            // 查找场景中与当前物理体对应的网格
             const mesh = scene.children.find(child => child.userData.cannonBody === body);
             if (mesh) {
+                // 如果找到，更新网格的位置和旋转
                 mesh.position.copy(body.position);
                 mesh.quaternion.copy(body.quaternion);
             }
