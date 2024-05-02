@@ -62,34 +62,6 @@ async function loadTexturesFromAtlas(atlasPrefix, tilesNum) {
     return textures;
 }
 /**
- * 渲染一个带多贴图的浮旋立方体
- * @param {string} atlasImgUrl - 多张贴图的前缀URL，格式如 'path/to/atlas-'
- * @param {number} tilesNum - 贴图数量
- */
-async function renderCubeWithMultipleTextures(atlasImgUrl, tilesNum) {
-    const {
-        cubeMesh,
-        cubeBody,
-        cubePhysMat
-    } = createCube({
-        size: 3,
-        position: new THREE.Vector3(0, 6, 0),
-        mass: 0
-    }, )
-    const textures = await loadTexturesFromAtlas(atlasImgUrl, tilesNum);
-    // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
-    const materials = textures.map(texture => new THREE.MeshBasicMaterial({
-        map: texture
-    }));
-    setupAutoRotate(cubeMesh);
-    cubeMesh.material = materials;
-    return {
-        cubeMesh,
-        cubeBody,
-        cubePhysMat
-    }
-}
-/**
  * 加载GLTF模型到指定的演示实例中。
  * @param {String} modelUrl gltf模型加载路径
  * TODO:
@@ -212,13 +184,25 @@ async function addPhysicsTest(demo, world) {
     demo.scene.add(model);
     world.addBody(gltfBody);
 
+    // 渲染一个带多贴图的浮旋立方体
     const {
         cubeBody: floatCubeBody,
         cubeMesh: floatCubeMesh,
         cubePhysMat: floatCubePhysMat
-    } = await renderCubeWithMultipleTextures('src/image/textures/', 6);
+    } = createCube({
+        size: 3,
+        position: new THREE.Vector3(0, 6, 0),
+        mass: 0
+    }, )
+    const textures = await loadTexturesFromAtlas('src/image/textures/', 6);
+    // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
+    floatCubeMesh.material = textures.map(texture => new THREE.MeshBasicMaterial({
+        map: texture
+    }));
+    setupAutoRotate(floatCubeMesh);
     demo.scene.add(floatCubeMesh);
     world.addBody(floatCubeBody);
+
     // 鼠标点击事件处理
     let ballBodies = [];
     /**
@@ -288,17 +272,15 @@ async function addPhysicsTest(demo, world) {
 
 // 示例用法
 const demo = new ThreeDemo({
-    // isAddAxesHelper: false,
+    isAddAxesHelper: false,
     // isAddGridHelper: false,
-    // isAddCameraHelper: false,
+    isAddCameraHelper: false,
     // isSetUpGUI: false,
     // isSetUpControls: false
 
 });
 const world = createDefaultPhysicsWorld()
 addPhysicsTest(demo, world)
-// renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
-// renderBall(demo);
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
