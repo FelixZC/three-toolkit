@@ -26,37 +26,6 @@ import {
     getRandomColor
 } from '../utils/common';
 import * as CANNON from 'cannon-es';
-
-/**
- * 渲染一条线
- * @param {ThreeDemo} demo - ThreeDemo实例
- * @param {THREE.Vector3[]} points - 线段顶点数组
- * @param {THREE.LineBasicMaterial} [material] - 自定义线段材质
- */
-function renderLine(demo, points, material = new THREE.LineBasicMaterial({
-    color: 0x0000ff
-})) {
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const line = new THREE.Line(geometry, material);
-    demo.scene.add(line);
-}
-
-/**
- * 渲染一个球体
- * @param {ThreeDemo} demo - ThreeDemo实例
- * @param {THREE.Material} [material] - 自定义材质
- * @param {THREE.Vector3} [position] - 自定义球体位置
- * @param {number} [radius=1] - 球体半径
- */
-function renderBall(demo, material = new THREE.MeshStandardMaterial({
-    color: 0xaafabb
-}), position = new THREE.Vector3(0, 0, 0), radius = 1) {
-    const geometry = new THREE.SphereGeometry(radius, 32, 32);
-    const ball = new THREE.Mesh(geometry, material);
-    ball.position.copy(position);
-    demo.scene.add(ball);
-}
-
 /**
  * 加载指定URL的图像资源
  *
@@ -93,32 +62,32 @@ async function loadTexturesFromAtlas(atlasPrefix, tilesNum) {
     return textures;
 }
 /**
- * 渲染一个带多贴图的立方体
- *
- * @param {ThreeDemo} demo - ThreeDemo实例
+ * 渲染一个带多贴图的浮旋立方体
  * @param {string} atlasImgUrl - 多张贴图的前缀URL，格式如 'path/to/atlas-'
  * @param {number} tilesNum - 贴图数量
- * @param {THREE.Vector3} [position=THREE.Vector3(0, 0, 0)] - 自定义立方体位置
  */
-async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, position = new THREE.Vector3(0, 0, 0)) {
+async function renderCubeWithMultipleTextures(atlasImgUrl, tilesNum) {
+    const {
+        cubeMesh,
+        cubeBody,
+        cubePhysMat
+    } = createCube({
+        size: 3,
+        position: new THREE.Vector3(0, 6, 0),
+        mass: 0
+    }, )
     const textures = await loadTexturesFromAtlas(atlasImgUrl, tilesNum);
-
     // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
     const materials = textures.map(texture => new THREE.MeshBasicMaterial({
         map: texture
     }));
-
-    // 创建立方体几何体
-    const geometry = new THREE.BoxGeometry(3, 3, 3);
-
-    // 使用多材质创建立方体网格，并设置其位置
-    const cube = new THREE.Mesh(geometry, materials);
-    cube.position.copy(position);
-
-    // 将立方体添加到场景中
-    setupAutoRotate(cube);
-    // setupMouseControls(cube);
-    demo.scene.add(cube);
+    setupAutoRotate(cubeMesh);
+    cubeMesh.material = materials;
+    return {
+        cubeMesh,
+        cubeBody,
+        cubePhysMat
+    }
 }
 /**
  * 加载GLTF模型到指定的演示实例中。
@@ -157,25 +126,18 @@ function loadGltfModel(modelUrl) {
             gltfBody.addShape(shape);
             gltfBody.position.copy(model.position);
             gltfBody.quaternion.copy(model.quaternion);
-
-            // 保存物理体引用到模型的userData，便于后续访问
-            model.userData.cannonBody = gltfBody;
-            // 确保模型的更新与物理世界同步
-            function syncModelWithBody(model, body) {
-                model.position.copy(body.position);
-                model.quaternion.copy(body.quaternion);
-            }
             /**
              * 添加模型动画
              */
             function animate() {
-                syncModelWithBody(model, gltfBody);
                 requestAnimationFrame(() => {
+                    // 确保模型的更新与物理世界同步
+                    model.position.copy(gltfBody.position);
+                    model.quaternion.copy(gltfBody.quaternion);
                     const delta = clock.getDelta();
                     mixer.update(delta);
                     animate();
                 });
-
             }
             animate()
             resolve({
@@ -234,13 +196,12 @@ async function addPhysicsTest(demo, world) {
         spherePhysMat
     } = createSphere({
         radius: 0.5, // 半径增大
-        position: new CANNON.Vec3(0, 5, 5), // 改变初始位置
+        position: new THREE.Vector3(0, 5, 5), // 改变初始位置
         color: 0x0000ff, // 改变颜色为红色
         materialName: "BouncySphereMaterial" // 使用不同的物理材质
     });
     world.addBody(sphereBody);
     scene.add(sphereMesh);
-    configureContactMaterials(world, spherePhysMat, groundPhysMat)
 
     const {
         model,
@@ -250,6 +211,14 @@ async function addPhysicsTest(demo, world) {
 
     demo.scene.add(model);
     world.addBody(gltfBody);
+
+    const {
+        cubeBody: floatCubeBody,
+        cubeMesh: floatCubeMesh,
+        cubePhysMat: floatCubePhysMat
+    } = await renderCubeWithMultipleTextures('src/image/textures/', 6);
+    demo.scene.add(floatCubeMesh);
+    world.addBody(floatCubeBody);
     // 鼠标点击事件处理
     let ballBodies = [];
     /**
@@ -267,7 +236,7 @@ async function addPhysicsTest(demo, world) {
                 spherePhysMat: ballPhysMat
             } = createSphere({
                 radius: 0.5,
-                position: new CANNON.Vec3(),
+                position: new THREE.Vector3(),
                 color: getRandomColor()
             });
 
@@ -291,11 +260,8 @@ async function addPhysicsTest(demo, world) {
             world.addBody(ballBody);
             scene.add(ballMesh); // 将网格模型添加到场景中
             ballMesh.userData.cannonBody = ballBody; // 将物理球体与网格模型关联
-            configureContactMaterials(world, ballPhysMat, groundPhysMat)
-            configureContactMaterials(world, ballPhysMat, gltfBodyMaterial)
         }
     });
-
     /**
      * 该函数用于实现动画循环。
      * 它通过调用requestAnimationFrame来递归自身，以在每一帧中更新物理世界的状态，并将物理模拟的结果应用到场景中的图形网格。
@@ -303,18 +269,8 @@ async function addPhysicsTest(demo, world) {
     function animate() {
         // 请求下一帧动画
         requestAnimationFrame(animate);
-
         // 更新物理世界的状态
         world.step(1 / 60); // 步进物理模拟，参数为时间步长
-
-        // 更新球体网格的位置和旋转，以匹配其物理体的状态
-        sphereMesh.position.copy(sphereBody.position);
-        sphereMesh.quaternion.copy(sphereBody.quaternion);
-
-        // 更新立方体网格的位置和旋转，以匹配其物理体的状态
-        cubeMesh.position.copy(cubeBody.position);
-        cubeMesh.quaternion.copy(cubeBody.quaternion);
-
         // 遍历球体集合，更新每个球体网格的位置和旋转，以匹配其对应的物理体状态
         ballBodies.forEach((body, index) => {
             // 查找场景中与当前物理体对应的网格
@@ -343,7 +299,6 @@ const world = createDefaultPhysicsWorld()
 addPhysicsTest(demo, world)
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
-await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整

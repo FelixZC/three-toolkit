@@ -54,7 +54,7 @@ export function createGround({
 
 export function createCube({
     size = 1,
-    position = new CANNON.Vec3(5, 5, 5),
+    position = new THREE.Vector3(5, 5, 5),
     mass = 1,
     color = 0xff0000,
     materialName = "CutePhysMaterial"
@@ -83,6 +83,17 @@ export function createCube({
     cubeMesh.castShadow = true;
     cubeMesh.position.copy(cubeBody.position);
 
+    function animate() {
+        requestAnimationFrame(() => {
+            // 更新立方体网格的位置和旋转，以匹配其物理体的状态
+            cubeMesh.position.copy(cubeBody.position);
+            cubeMesh.quaternion.copy(cubeBody.quaternion);
+            animate()
+        });
+    }
+    if (mass != 0) {
+        animate()
+    }
     return {
         cubeMesh,
         cubeBody,
@@ -91,11 +102,12 @@ export function createCube({
 }
 export function createSphere({
     radius = 0.5,
-    position = new CANNON.Vec3(),
-    velocity = new CANNON.Vec3(),
-    angularVelocity = new CANNON.Vec3(),
+    position = new THREE.Vector3(),
+    velocity = new THREE.Vector3(),
+    angularVelocity = new THREE.Vector3(),
     color = 0x00ff00,
-    materialName = "SpherePhysMaterial"
+    materialName = "SpherePhysMaterial",
+    mass = 1
 } = {}) {
     // 创建球体几何体
     const sphereGeo = new THREE.SphereGeometry(radius, 32, 32);
@@ -110,7 +122,7 @@ export function createSphere({
 
     // 创建球体物理体
     const sphereBody = new CANNON.Body({
-        mass: 1,
+        mass,
         material: spherePhysMat
     });
     sphereBody.addShape(new CANNON.Sphere(radius));
@@ -123,6 +135,17 @@ export function createSphere({
     sphereMesh.castShadow = true;
     sphereMesh.position.copy(sphereBody.position);
 
+    function animate() {
+        requestAnimationFrame(() => {
+            // 更新球体网格的位置和旋转，以匹配其物理体的状态
+            sphereMesh.position.copy(sphereBody.position);
+            sphereMesh.quaternion.copy(sphereBody.quaternion);
+            animate()
+        });
+    }
+    if (mass != 0) {
+        animate()
+    }
     return {
         sphereBody,
         sphereMesh,
