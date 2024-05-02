@@ -120,70 +120,95 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
     // setupMouseControls(cube);
     demo.scene.add(cube);
 }
-
 /**
  * 加载GLTF模型到指定的演示实例中。
- * @param {Object} demo 演示实例，需要包含场景(scene)以及之后可能用到的动画混合器(AnimationMixer)。
+ * @param {String} modelUrl gltf模型加载路径
  * TODO:
  * 碰撞检测：在模型加载成功后，为模型创建相应的Cannon.js物理体，并设置合适的形状和材质。例如，如果模型是一个角色，你可以为它的底部创建一个胶囊形状的碰撞体，以模拟脚步。
  * 物理响应：将模型的物理体添加到Cannon.js的世界中，并在animate函数里同步模型的位置和旋转，以反映物理模拟的结果。
  * 事件触发：如果模型需要响应特定物理事件（如跳跃、移动），可以通过监听物理事件或直接在动画循环中根据物理状态调整模型行为。
  */
-function loadGltfModel(demo, world) {
-    // 模型的URL地址
-    const modelUrl = 'src/model/gltf/LittlestTokyo.glb'
-    // DRACO解码器的路径
-    const dracoDecoderPath = 'src/libs/draco/'
+function loadGltfModel(modelUrl) {
+    return new Promise((resolve, reject) => {
+        // 模型加载成功后的回调函数
+        const onModelLoaded = (gltf) => {
+            // 获取模型并设置其位置和缩放比例
+            const model = gltf.scene;
+            model.position.set(1, 1, 0);
+            model.scale.set(0.01, 0.01, 0.01);
+            // 将模型添加到演示场景中
+            // 创建动画混合器并播放第一个动画
+            const clock = new THREE.Clock();
+            const mixer = new THREE.AnimationMixer(model);
+            mixer.clipAction(gltf.animations[0]).play();
 
-    // 模型加载成功后的回调函数
-    const onModelLoaded = (gltf) => {
-        // 获取模型并设置其位置和缩放比例
-        const model = gltf.scene;
-        model.position.set(1, 1, 0);
-        model.scale.set(0.01, 0.01, 0.01);
-        // 将模型添加到演示场景中
-        demo.scene.add(model);
-        // 创建动画混合器并播放第一个动画
-        const clock = new THREE.Clock();
-        const mixer = new THREE.AnimationMixer(model);
-        mixer.clipAction(gltf.animations[0]).play();
+            // 添加物理碰撞
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const center = box.getCenter(new THREE.Vector3());
 
+            // 创建物理体
+            const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2));
+            const gltfBodyMaterial = new CANNON.Material("gltfMaterial");
+            const gltfBody = new CANNON.Body({
+                mass: 1,
+                material: gltfBodyMaterial
+            }); // 质量设为0，表示静态物体，或者根据需要设定质量
+            gltfBody.addShape(shape);
+            gltfBody.position.copy(model.position);
+            gltfBody.quaternion.copy(model.quaternion);
 
-        /**
-         * 添加模型动画
-         */
-        function animate() {
-            requestAnimationFrame(() => {
-                const delta = clock.getDelta();
-                mixer.update(delta);
-                animate();
-            });
+            // 保存物理体引用到模型的userData，便于后续访问
+            model.userData.cannonBody = gltfBody;
+            // 确保模型的更新与物理世界同步
+            function syncModelWithBody(model, body) {
+                model.position.copy(body.position);
+                model.quaternion.copy(body.quaternion);
+            }
+            /**
+             * 添加模型动画
+             */
+            function animate() {
+                syncModelWithBody(model, gltfBody);
+                requestAnimationFrame(() => {
+                    const delta = clock.getDelta();
+                    mixer.update(delta);
+                    animate();
+                });
+
+            }
+            animate()
+            resolve({
+                model,
+                gltfBody,
+                gltfBodyMaterial
+            })
         }
-        animate()
-    }
 
-    // 模型加载失败时的错误处理函数
-    const onModelError = (e) => {
-        console.error(e);
-    }
+        // 模型加载失败时的错误处理函数
+        const onModelError = (e) => {
+            console.error(e);
+            reject(e)
+        }
 
-    // 初始化DRACO解码器
-    const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath(dracoDecoderPath);
+        // 初始化DRACO解码器
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('src/libs/draco/');
 
-    // 初始化GLTF加载器并设置DRACO解码器
-    const loader = new GLTFLoader();
-    loader.setDRACOLoader(dracoLoader);
+        // 初始化GLTF加载器并设置DRACO解码器
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
 
-    // 加载模型，成功后调用onModelLoaded，失败后调用onModelError
-    loader.load(modelUrl, onModelLoaded, undefined, onModelError);
+        // 加载模型，成功后调用onModelLoaded，失败后调用onModelError
+        loader.load(modelUrl, onModelLoaded, undefined, onModelError);
+    });
 }
 
 /**
  * 物理学测试函数 - 利用Three.js和Cannon.js创建一个简单的物理模拟场景
  * @param {Object} demo - 包含场景、相机和渲染器的对象
  */
-function addPhysicsTest(demo, world) {
+async function addPhysicsTest(demo, world) {
     const scene = demo.scene;
     const camera = demo.camera;
     const renderer = demo.renderer;
@@ -216,6 +241,15 @@ function addPhysicsTest(demo, world) {
     world.addBody(sphereBody);
     scene.add(sphereMesh);
     configureContactMaterials(world, spherePhysMat, groundPhysMat)
+
+    const {
+        model,
+        gltfBody,
+        gltfBodyMaterial
+    } = await loadGltfModel('src/model/gltf/LittlestTokyo.glb')
+
+    demo.scene.add(model);
+    world.addBody(gltfBody);
     // 鼠标点击事件处理
     let ballBodies = [];
     /**
@@ -258,6 +292,7 @@ function addPhysicsTest(demo, world) {
             scene.add(ballMesh); // 将网格模型添加到场景中
             ballMesh.userData.cannonBody = ballBody; // 将物理球体与网格模型关联
             configureContactMaterials(world, ballPhysMat, groundPhysMat)
+            configureContactMaterials(world, ballPhysMat, gltfBodyMaterial)
         }
     });
 
@@ -309,7 +344,6 @@ addPhysicsTest(demo, world)
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
 await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
-loadGltfModel(demo, world)
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
