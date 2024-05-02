@@ -22,6 +22,9 @@ import {
     addSmoke,
     addStars,
 } from '../utils/three.js/effect'
+import {
+    getRandomColor
+} from '../utils/common';
 import * as CANNON from 'cannon-es';
 
 /**
@@ -206,7 +209,7 @@ function addPhysicsTest(demo, world) {
         spherePhysMat
     } = createSphere({
         radius: 0.5, // 半径增大
-        position: new CANNON.Vec3(5, 5, 0), // 改变初始位置
+        position: new CANNON.Vec3(0, 5, 5), // 改变初始位置
         color: 0x0000ff, // 改变颜色为红色
         materialName: "BouncySphereMaterial" // 使用不同的物理材质
     });
@@ -228,8 +231,11 @@ function addPhysicsTest(demo, world) {
                 sphereBody: ballBody,
                 sphereMesh: ballMesh,
                 spherePhysMat: ballPhysMat
-            } = createSphere();
-
+            } = createSphere({
+                radius: 0.5,
+                position: new CANNON.Vec3(),
+                color: getRandomColor()
+            });
 
             // 使用Three.js的Raycaster来计算鼠标位置和场景中物体的交点
             const raycaster = new THREE.Raycaster();
