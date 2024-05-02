@@ -14,7 +14,7 @@ import {
  *  @returns {ThreeDemo} 返回ThreeDemo的实例。
  */
 export default class ThreeDemo {
-    constructor(containerId = "container") {
+    constructor(config = {}, containerId = "container") {
         // 获取HTML容器元素，基于窗口大小初始化画布尺寸和宽高比。
         this.container = document.getElementById(containerId);
         this.width = window.innerWidth;
@@ -35,7 +35,8 @@ export default class ThreeDemo {
             isAddGridHelper: true, // 是否添加网格辅助线
             isAddCameraHelper: true, // 是否添加相机辅助线
             isSetUpGUI: true, // 是否设置图形用户界面
-            isSetUpEnvironment: false, // 是否设置环境光
+            isSetUpEnvironment: false, // 是否设置环境光,
+            ...config
         };
 
         // 检查WebGL是否可用，如果不可用，则向容器添加错误消息并抛出异常。
@@ -43,6 +44,8 @@ export default class ThreeDemo {
             const warning = WebGL.getWebGLErrorMessage();
             this.container.appendChild(warning);
             throw new Error("WebGL is not available.");
+        } else {
+            this.init()
         }
     }
 
@@ -296,17 +299,7 @@ export default class ThreeDemo {
      *                        具体结构取决于应用需求。
      * @returns {undefined} 该函数没有返回值。
      */
-    async init(config) {
-        // 首先检查传入的配置对象，并赋值给this.config
-        if (config) {
-            this.config = config;
-        }
-
-        // 检查WebGL是否可用，如果不可用则提前退出
-        if (!WebGL.isWebGLAvailable()) {
-            return;
-        }
-
+    async init() {
         // 初始化场景、相机、光照和渲染器
         this.setUpScene();
         this.setUpCamera();

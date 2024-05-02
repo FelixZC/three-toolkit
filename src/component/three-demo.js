@@ -5,6 +5,13 @@ import {
 } from '../utils/three.js/animate'
 import ThreeDemo from '../utils/three.js/init'
 import {
+    createDefaultPhysicsWorld,
+    createGround,
+    createCube,
+    createSphere,
+    configureContactMaterials
+} from '../utils/three.js/physics'
+import {
     GLTFLoader
 } from 'three/addons/loaders/GLTFLoader.js';
 import {
@@ -15,8 +22,8 @@ import {
     addSmoke,
     addStars,
 } from '../utils/three.js/effect'
-
 import * as CANNON from 'cannon-es';
+
 /**
  * 渲染一条线
  * @param {ThreeDemo} demo - ThreeDemo实例
@@ -114,8 +121,12 @@ async function renderCubeWithMultipleTextures(demo, atlasImgUrl, tilesNum, posit
 /**
  * 加载GLTF模型到指定的演示实例中。
  * @param {Object} demo 演示实例，需要包含场景(scene)以及之后可能用到的动画混合器(AnimationMixer)。
+ * TODO:
+ * 碰撞检测：在模型加载成功后，为模型创建相应的Cannon.js物理体，并设置合适的形状和材质。例如，如果模型是一个角色，你可以为它的底部创建一个胶囊形状的碰撞体，以模拟脚步。
+ * 物理响应：将模型的物理体添加到Cannon.js的世界中，并在animate函数里同步模型的位置和旋转，以反映物理模拟的结果。
+ * 事件触发：如果模型需要响应特定物理事件（如跳跃、移动），可以通过监听物理事件或直接在动画循环中根据物理状态调整模型行为。
  */
-function loadGltfModel(demo) {
+function loadGltfModel(demo, world) {
     // 模型的URL地址
     const modelUrl = 'src/model/gltf/LittlestTokyo.glb'
     // DRACO解码器的路径
@@ -133,6 +144,8 @@ function loadGltfModel(demo) {
         const clock = new THREE.Clock();
         const mixer = new THREE.AnimationMixer(model);
         mixer.clipAction(gltf.animations[0]).play();
+
+
         /**
          * 添加模型动画
          */
@@ -167,132 +180,39 @@ function loadGltfModel(demo) {
  * 物理学测试函数 - 利用Three.js和Cannon.js创建一个简单的物理模拟场景
  * @param {Object} demo - 包含场景、相机和渲染器的对象
  */
-function physicsTest(demo) {
-    /**
-     * 初始化场景、相机和渲染器
-     * 使用demo对象中已定义的场景、相机和渲染器
-     */
-
+function addPhysicsTest(demo, world) {
     const scene = demo.scene;
     const camera = demo.camera;
     const renderer = demo.renderer;
-
-    /**
-     * 创建地面几何体和材质
-     * 地面为一个长宽为25单位的立方体，高度为0.1单位
-     * 使用MeshStandardMaterial材质，颜色为灰色
-     */
-    const groundGeo = new THREE.BoxGeometry(25, 0.1, 25);
-    const groundMaterial = new THREE.MeshStandardMaterial({
-        color: 0x808080
-    });
-
-    /**
-     * 初始化Cannon.js物理世界
-     * 设置重力为向下的9.82 m/s^2，并使用简单的碰撞检测方法
-     */
-    const world = new CANNON.World();
-    world.gravity.set(0, -9.82, 0);
-    world.broadphase = new CANNON.NaiveBroadphase();
-
-    /**
-     * 定义地面物理材质并创建地面物理体
-     * 地面物理体质量为0，不参与碰撞但可以被碰撞
-     */
-    const groundPhysMat = new CANNON.Material("GroundPhysMaterial");
-    const groundBody = new CANNON.Body({
-        mass: 0,
-        material: groundPhysMat
-    });
-    groundBody.addShape(new CANNON.Box(new CANNON.Vec3(12.5, 0.1, 12.5)));
-    groundBody.position.set(0, -1.1, 0);
+    const {
+        groundBody,
+        groundMesh,
+        groundPhysMat
+    } = createGround()
     world.addBody(groundBody);
-
-    /**
-     * 创建地面的Three.js网格并设置属性
-     * 地面网格能够接收阴影，并与物理体位置同步
-     */
-    const groundMesh = new THREE.Mesh(groundGeo, groundMaterial);
-    groundMesh.receiveShadow = true;
-    groundMesh.position.copy(groundBody.position);
     scene.add(groundMesh);
+    const {
+        cubeBody,
+        cubeMesh,
+        cubePhysMat
+    } = createCube()
 
-    /**
-     * 创建立方体几何体和材质
-     * 立方体边长为1单位，使用红色的MeshStandardMaterial材质
-     */
-    const cubeGeo = new THREE.BoxGeometry(1, 1, 1);
-    const cubeMaterial = new THREE.MeshStandardMaterial({
-        color: 0xff0000
-    });
-
-    /**
-     * 创建立方体物理体并添加到物理世界
-     * 立方体质量为1，初始位置设置在(5, 5, 5)
-     */
-    const cubeBody = new CANNON.Body({
-        mass: 1
-    });
-    cubeBody.addShape(new CANNON.Box(new CANNON.Vec3(0.5, 0.5, 0.5)));
-    cubeBody.position.set(5, 5, 5);
     world.addBody(cubeBody);
-
-    /**
-     * 创建立方体的Three.js网格并设置属性
-     * 立方体网格投射阴影，并与物理体位置同步
-     */
-    const cubeMesh = new THREE.Mesh(cubeGeo, cubeMaterial);
-    cubeMesh.castShadow = true;
-    cubeMesh.position.copy(cubeBody.position);
     scene.add(cubeMesh);
-
-    /**
-     * 创建球体几何体和材质
-     * 球体半径为0.5单位，使用绿色的MeshStandardMaterial材质
-     */
-    const sphereRadius = 0.5;
-    const sphereGeo = new THREE.SphereGeometry(sphereRadius, 32, 32);
-    const sphereMaterial = new THREE.MeshStandardMaterial({
-        color: 0x00ff00
+    // 添加球体
+    const {
+        sphereMesh,
+        sphereBody,
+        spherePhysMat
+    } = createSphere({
+        radius: 0.5, // 半径增大
+        position: new CANNON.Vec3(5, 5, 0), // 改变初始位置
+        color: 0x0000ff, // 改变颜色为红色
+        materialName: "BouncySphereMaterial" // 使用不同的物理材质
     });
-
-    /**
-     * 创建球体物理材质和与地面的碰撞材质
-     * 设置球体与地面碰撞时的摩擦系数和弹性
-     */
-    const spherePhysMat = new CANNON.Material("SpherePhysMaterial");
-    const sphereGroundContactMat = new CANNON.ContactMaterial(
-        spherePhysMat,
-        groundPhysMat, {
-            friction: 0.3,
-            restitution: 0.3
-        }
-    );
-    world.addContactMaterial(sphereGroundContactMat);
-
-    /**
-     * 创建一个具有指定质量和材料的球体物理体，并将其添加到物理世界中。
-     * 同时，创建一个球体的三维模型，并将其添加到场景中。
-     */
-    const sphereBody = new CANNON.Body({
-        mass: 1, // 球体的质量
-        material: spherePhysMat // 球体的物理材料
-    });
-    sphereBody.addShape(new CANNON.Sphere(sphereRadius));
-    // 设置球体的初始位置和速度，以及角速度
-    sphereBody.position.set(-4, 10, 2);
-    sphereBody.velocity.set(0, -5, 0);
-    sphereBody.angularVelocity.set(0, 0.1, 1);
-    // 将球体物理体添加到物理世界
     world.addBody(sphereBody);
-    // 创建球体的三维模型，并设置其属性
-    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
-    sphereMesh.castShadow = true; // 球体可以投射阴影
-    // 将三维模型的位置与物理体的位置同步
-    sphereMesh.position.copy(sphereBody.position);
-    // 将球体模型添加到场景中
     scene.add(sphereMesh);
-
+    configureContactMaterials(world, spherePhysMat, groundPhysMat)
     // 鼠标点击事件处理
     let ballBodies = [];
     /**
@@ -304,13 +224,12 @@ function physicsTest(demo) {
     renderer.domElement.addEventListener('mousedown', (event) => {
         // 当鼠标左键按下时
         if (event.button === 0) {
-            // 创建一个物理球体
-            const sphereShape = new CANNON.Sphere(0.5);
-            const ballBody = new CANNON.Body({
-                mass: 1, // 球体的质量
-                material: spherePhysMat // 球体的物理材质
-            });
-            ballBody.addShape(sphereShape);
+            const {
+                sphereBody: ballBody,
+                sphereMesh: ballMesh,
+                spherePhysMat: ballPhysMat
+            } = createSphere();
+
 
             // 使用Three.js的Raycaster来计算鼠标位置和场景中物体的交点
             const raycaster = new THREE.Raycaster();
@@ -318,7 +237,6 @@ function physicsTest(demo) {
                 new THREE.Vector2((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1),
                 camera
             );
-
             // 检测鼠标点击是否与地面相交
             const intersections = raycaster.intersectObject(groundMesh);
             if (intersections.length > 0) {
@@ -328,17 +246,12 @@ function physicsTest(demo) {
                 console.log("No intersection with the ground."); // 如果没有相交，打印错误信息并返回
                 return;
             }
-
             // 将物理球体添加到物理世界
-            world.addBody(ballBody);
             ballBodies.push(ballBody); // 将球体添加到球体数组
-
-            // 创建球体的Three.js网格模型
-            const sphereGeometry = new THREE.SphereGeometry(sphereShape.radius, 32, 32);
-            const ballMesh = new THREE.Mesh(sphereGeometry, sphereMaterial);
-            ballMesh.position.copy(ballBody.position); // 将网格模型的位置设置为物理球体的位置
+            world.addBody(ballBody);
             scene.add(ballMesh); // 将网格模型添加到场景中
             ballMesh.userData.cannonBody = ballBody; // 将物理球体与网格模型关联
+            configureContactMaterials(world, ballPhysMat, groundPhysMat)
         }
     });
 
@@ -377,22 +290,21 @@ function physicsTest(demo) {
 }
 
 // 示例用法
-const demo = new ThreeDemo();
-demo.init({
-    ...demo.config,
+const demo = new ThreeDemo({
     // isAddAxesHelper: false,
     // isAddGridHelper: false,
     // isAddCameraHelper: false,
     // isSetUpGUI: false,
     // isSetUpControls: false
-})
 
+});
+const world = createDefaultPhysicsWorld()
+addPhysicsTest(demo, world)
 // renderLine(demo, [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)]);
 // renderBall(demo);
 await renderCubeWithMultipleTextures(demo, 'src/image/textures/', 6, new THREE.Vector3(0, 6, 0));
-loadGltfModel(demo)
+loadGltfModel(demo, world)
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
 addSmoke(demo)
-physicsTest(demo)
