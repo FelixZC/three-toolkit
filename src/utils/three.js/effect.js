@@ -94,40 +94,37 @@ class Firework {
 export function addFireWork(demo) {
     let fireworks = []; // 存储所有烟花对象的数组
 
-    /**
-     * 创建并初始化一个烟花对象。
-     */
+    // 创建并初始化一个烟花对象的函数保持不变
     function createFirework() {
-        // 随机生成烟花的初始位置
         const position = new THREE.Vector3(Math.random() * 10 - 5, 0, Math.random() * 10 - 5);
-        fireworks.push(new Firework(demo, position)); // 将新创建的烟花添加到数组中
+        fireworks.push(new Firework(demo, position));
     }
 
     const clock = new THREE.Clock(); // 用于动画的时钟控制
 
-    /**
-     * 烟花动画循环函数。
-     */
     function animate() {
-        requestAnimationFrame(animate); // 下一帧动画的请求
-        const deltaTime = clock.getDelta(); // 获取自上一帧以来的时间差
+        requestAnimationFrame(animate);
+        const deltaTime = clock.getDelta();
 
-        // 更新所有烟花的状态，并移除已经结束的烟花
         fireworks.forEach((fw, index) => {
             fw.update(deltaTime);
             if (fw.life <= 0) {
-                demo.scene.remove(fw.mesh); // 从场景中移除烟花
-                fireworks.splice(index, 1); // 从数组中移除已结束的烟花对象
+                demo.scene.remove(fw.mesh);
+                fireworks.splice(index, 1);
             }
         });
-
-        // 随机决定是否发射新的烟花
-        if (Math.random() < 0.01) { // 每100帧发射一次烟花的概率
-            createFirework();
-        }
     }
 
-    animate(); // 启动动画循环
+    // 启动动画循环
+    animate();
+
+    // 添加键盘事件监听器
+    document.addEventListener('keydown', (event) => {
+        // 检查是否为空格键被按下
+        if (event.code === 'Space') {
+            createFirework(); // 用户按下空格键时创建新的烟花
+        }
+    });
 }
 
 /**
