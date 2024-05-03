@@ -23,7 +23,8 @@ export default class ThreeDemo {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
         this.aspectRatio = this.width / this.height;
-        this.devicePixelRatio = window.devicePixelRatio;
+        this.devicePixelRatio = Math.min(window.devicePixelRatio, 2)
+        this.resolution = new THREE.Vector2(this.width * this.devicePixelRatio, this.height * this.devicePixelRatio);
         this.gui = null
         // 初始化Three.js场景、相机和渲染器相关的属性。
         this.scene = null;
@@ -194,7 +195,7 @@ export default class ThreeDemo {
         const camera = this.camera
         // 设置渲染器，并配置其输出编码、大小、像素比和清屏颜色
         this.renderer = renderer
-        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;;
         this.renderer.setSize(this.width, this.height);
         this.renderer.setPixelRatio(this.devicePixelRatio);
         this.renderer.setClearColor(this.scene.fog.color);
