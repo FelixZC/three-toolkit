@@ -143,9 +143,11 @@ function loadGltfModel(modelUrl) {
  * @param {Object} demo - 包含场景、相机和渲染器的对象
  */
 async function addPhysicsTest(demo, world) {
-    const scene = demo.scene;
-    const camera = demo.camera;
-    const renderer = demo.renderer;
+    const {
+        scene,
+        camera,
+        renderer
+    } = demo
     const {
         groundBody,
         groundMesh,
