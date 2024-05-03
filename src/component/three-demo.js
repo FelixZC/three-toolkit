@@ -286,4 +286,3 @@ addPhysicsTest(demo, world)
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
-addSmoke(demo)
