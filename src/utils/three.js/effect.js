@@ -1,10 +1,13 @@
 import * as THREE from 'three';
-import vertexShaderSource from '../../shaders/smoke/vertex-shader.glsl';
-import fragmentShaderSource from '../../shaders/smoke/fragment-shader.glsl';
+import smokeVertexShader from '../../shaders/smoke/vertex-shader.glsl';
+import smokeFragmentShader from '../../shaders/smoke/fragment-shader.glsl';
 
-
+import fireworkVertexShader from '../../shaders/fireworks/vertex.glsl'
+import fireworkFragmentShader from '../../shaders/fireworks/fragment.glsl'
+import gsap from 'gsap';
 /**
- * TODO
+ * 烟花爆炸效果引用了大佬的效果(reference:):https://github.com/jamestw13/fireworks-shaders-threejs
+ * TODO:
  * 粒子运动逻辑：改进爆炸后粒子的运动逻辑，使其更加自然和多样化，例如考虑重力影响、风向扰动等。
  * 颜色过渡：优化颜色变化，使粒子在生命周期内有更自然的色彩过渡效果。
  * 光效与阴影：为烟花增加光源或调整材质属性，以模拟真实的光影效果。
@@ -14,176 +17,242 @@ import fragmentShaderSource from '../../shaders/smoke/fragment-shader.glsl';
  * 性能优化：确保大量粒子动画不会显著影响性能，可能需要考虑粒子池技术来复用粒子对象。
  */
 class Firework {
-    constructor(demo, position, config = {}) {
+    /**
+     * 构造函数：初始化烟花模拟器
+     * @param {Object} demo - 用于烟花效果演示的对象
+     * @param {Object} config - 可选配置对象，用于重写默认配置
+     */
+    constructor(demo, config = {}) {
         this.demo = demo
-        this.position = position.clone();
-        this.particles = []; // 保持一个粒子数组，但初始时不会填充300个粒子
-        this.isExploded = false;
-        this.gravity = new THREE.Vector3(0, -config.gravityFactor || 0.1, 0);
-        // 上升阶段初始化单个粒子
-        const singleParticleGeometry = new THREE.BufferGeometry();
-        const singlePositions = new Float32Array(3); // 仅为一个粒子的位置
+        // 设置默认配置，并允许通过config参数进行覆盖
+        this.config = {
+            spreadAngle: Math.PI / 4, // 烟花扩散角度
+            speedFactor: 1, // 烟花速度因子
+            gravityFactor: 0.1, // 重力影响因子
+            explodeY: 10, // 烟花爆炸的Y轴偏移
+            ...config
+        }
+        this.fireworks = [] // 用于存储所有烟花对象的数组
+        this.gravity = new THREE.Vector3(0, -this.config.gravityFactor || 0.1, 0); // 定义重力向量
+        this.textures = [] // 存储烟花粒子纹理
+        this.loadTextures() // 加载烟花粒子纹理
+        this.clock = new THREE.Clock() // 初始化计时器，用于控制动画帧率
+        this.animate() // 启动动画
+    }
+
+    /**
+     * 动画循环函数，不断更新烟花状态并渲染
+     */
+    animate() {
+        requestAnimationFrame(() => {
+            this.deltaTime = this.clock.getDelta(); // 获取自上一帧以来的时间差
+            this.animate() // 递归调用自身以维持动画循环
+            this.fireworks.forEach((fw, index) => {
+                this.update(fw, this.deltaTime); // 更新每个烟花的状态
+            });
+        });
+    }
+
+    /**
+     * 加载纹理图片
+     */
+    loadTextures() {
+        const textureLoader = new THREE.TextureLoader(); // 创建纹理加载器
+        // 加载并存储烟花粒子的纹理图片
+        this.textures = [
+            textureLoader.load('src/image/textures/particles/1.png'),
+            textureLoader.load('src/image/textures/particles/2.png'),
+            textureLoader.load('src/image/textures/particles/3.png'),
+            textureLoader.load('src/image/textures/particles/4.png'),
+            textureLoader.load('src/image/textures/particles/5.png'),
+            textureLoader.load('src/image/textures/particles/6.png'),
+            textureLoader.load('src/image/textures/particles/7.png'),
+            textureLoader.load('src/image/textures/particles/8.png'),
+        ];
+    }
+    /**
+     * 初始化并发射一个单个粒子作为上升阶段的一部分。
+     * @param {THREE.Vector3} position - 粒子的初始位置。
+     */
+    launch(position) {
+        // 创建一个包含粒子基本属性的对象
+        const firework = {
+            isExploded: false,
+            particles: [],
+            geometry: null,
+            material: null,
+            mesh: null,
+            position: new THREE.Vector3()
+        }
+        // 设置粒子的初始位置
+        firework.position = position.clone();
+
+        // 初始化单个粒子的位置和颜色
+        const singlePositions = new Float32Array(3);
         const singleColors = new Float32Array(3);
+        // 为粒子随机生成x, z位置，保持y轴位置初始为0
         const x = (Math.random() - 0.5) * 2;
-        const y = 0; // 初始位置在y轴上可能不需要随机
+        const y = 0;
         const z = (Math.random() - 0.5) * 2;
         singlePositions.set([x, y, z]);
+
+        // 随机生成粒子的颜色
         const r = Math.random() * 0.5 + 0.5;
         const g = Math.random() * 0.5 + 0.5;
         const b = Math.random();
         singleColors.set([r, g, b]);
 
-        singleParticleGeometry.setAttribute('position', new THREE.BufferAttribute(singlePositions, 3));
-        singleParticleGeometry.setAttribute('color', new THREE.BufferAttribute(singleColors, 3));
+        // 使用粒子的位置和颜色创建几何体和材质
+        firework.geometry = new THREE.BufferGeometry();
+        firework.geometry.setAttribute('position', new THREE.BufferAttribute(singlePositions, 3));
+        firework.geometry.setAttribute('color', new THREE.BufferAttribute(singleColors, 3));
 
-        this.material = new THREE.PointsMaterial({
-            size: 0.1, // 物体的大小，此处设置为0.1
-            vertexColors: true, // 是否启用顶点颜色，true表示启用
-            blending: THREE.AdditiveBlending, // 启用混合模式，并设置为添加性混合
-            transparent: true, // 物体是否透明，true表示透明
-            depthWrite: false, // 是否写入深度值，false表示不写入
+        // 设置粒子的材质属性，如大小、颜色混合模式等
+        firework.material = new THREE.PointsMaterial({
+            size: 0.1,
+            vertexColors: true,
+            blending: THREE.AdditiveBlending,
+            transparent: true,
+            depthWrite: false,
         });
 
-        this.mesh = new THREE.Points(singleParticleGeometry, this.material);
-        this.mesh.position.copy(this.position);
-        this.demo.scene.add(this.mesh);
+        // 创建粒子网格并设置其位置，然后将其添加到场景中
+        firework.mesh = new THREE.Points(firework.geometry, firework.material);
+        firework.mesh.position.copy(firework.position);
+        this.demo.scene.add(firework.mesh);
+
+        // 将该粒子添加到粒子列表中以进行后续管理
+        this.fireworks.push(firework)
     }
-
-    update(deltaTime) {
-        if (!this.isExploded) {
-            // 简单上升动画
-            this.position.y += 10 * deltaTime; // 控制上升速度
-            this.mesh.position.copy(this.position);
-
-            // 碰撞检测，此处简化处理，实际可根据需要设定爆炸条件
-            if (this.position.y > 20) {
-                this.explode();
-            }
-        } else {
-            for (let p of this.particles) {
-                p.life -= deltaTime;
-                const lifeRatio = Math.max(0, p.life / (p.startLife || p.life)); // 防止生命值为负
-                const colorFade = new THREE.Color().fromArray(p.startColor).lerp(new THREE.Color().fromArray(p.endColor), 1 - lifeRatio); // 颜色过渡
-
-                // 添加透明度管理
-                const alpha = Math.max(0, lifeRatio); // 确保透明度在[0, 1]范围内
-                colorFade.a = alpha; // 直接设置alpha属性来控制透明度
-                // 更新粒子位置
-                this.mesh.geometry.attributes.position.array[p.index * 3] = p.velocity.x * deltaTime + p.startPos.x;
-                this.mesh.geometry.attributes.position.array[p.index * 3 + 1] = p.velocity.y * deltaTime + p.startPos.y - 0.5 * this.gravity.y * deltaTime * deltaTime; // 考虑重力加速度
-                this.mesh.geometry.attributes.position.array[p.index * 3 + 2] = p.velocity.z * deltaTime + p.startPos.z;
-
-                // 应用透明度后的颜色到粒子
-                colorFade.toArray(this.mesh.geometry.attributes.color.array, p.index * 3);
-                this.mesh.geometry.attributes.position.needsUpdate = true;
-                this.mesh.geometry.attributes.color.needsUpdate = true;
-
-                // 当粒子生命结束时，直接将粒子透明度设为0，然后从数组中移除
-                if (p.life <= 0) {
-                    colorFade.a = 0;
-                    colorFade.toArray(this.mesh.geometry.attributes.color.array, p.index * 3);
-                    this.particles.splice(this.particles.indexOf(p), 1);
-                }
-            }
-            // 确保所有粒子生命周期结束且数组为空时移除mesh
-            if (this.isExploded && this.particles.length === 0) {
-                this.demo.scene.remove(this.mesh);
+    /**
+     * 更新指定的烟火对象的状态。
+     * @param {Object} firework - 一个表示烟火的物体对象，具有位置、网格和是否爆炸的属性。
+     * 该方法会根据烟火当前的状态（是否爆炸）来更新其位置，并在达到一定高度时触发爆炸。
+     */
+    update(firework) {
+        if (!firework.isExploded) {
+            // 简单的上升动画逻辑
+            firework.position.y += 10 * this.deltaTime; // 根据delta时间（自上次更新以来的时间）控制烟火上升的速度
+            firework.mesh.position.copy(firework.position); // 将烟火的网格位置更新为其逻辑位置
+            // 执行碰撞检测，此处的逻辑为简化处理。实际应用中，可能需要更复杂的逻辑来决定烟火何时爆炸。
+            if (firework.position.y > this.config.explodeY) {
+                this.explode(firework); // 当烟火到达预设的爆炸高度时，触发爆炸效果
             }
         }
     }
-    F
 
-    explode(config = {}) {
-        this.isExploded = true;
-        const {
-            spreadAngle = Math.PI / 4,
-                speedFactor = 1,
-                gravityFactor = 0.1
-        } = config;
-        this.gravity.set(0, -gravityFactor, 0);
+    /**
+     * 销毁烟火对象
+     * @param {Object} firework 烟火对象，包含烟火的网格和几何体等属性
+     */
+    destroy(firework) {
+        this.demo.scene.remove(firework.mesh) // 从场景中移除烟火的网格
+        firework.geometry.dispose(); // 释放几何体资源
+        firework.material.dispose(); // 释放材质资源
+    };
 
-        // 重新设置粒子几何体以容纳300个粒子
-        const particleCount = 300;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(particleCount * 3);
-        const colors = new Float32Array(particleCount * 3);
+    /**
+     * 爆炸效果处理
+     * @param {Object} firework 烟火对象，将对此对象进行爆炸效果的处理
+     */
+    explode(firework) {
+        this.destroy(firework) // 首先销毁原有的烟火对象，准备生成新的粒子效果
+        firework.isExploded = true; // 标记该烟火对象为已爆炸
 
-        // 生成爆炸粒子数据
-        for (let i = 0; i < particleCount; i++) {
-            const life = Math.random() * 4 + 4; // 延长粒子的生存期
-            const angle = Math.random() * spreadAngle - spreadAngle / 2;
-            // 让粒子从当前烟花位置开始扩散，增加一点随机偏移
-            const startPos = [
-                this.position.x + (Math.random() - 0.5) * 0.5,
-                this.position.y,
-                this.position.z + (Math.random() - 0.5) * 0.5
-            ];
-            const baseVelocity = new THREE.Vector3(
-                Math.cos(angle) * (Math.random() * 2 - 1),
-                Math.random() * 2 + 1, // 初始向上速度
-                Math.sin(angle) * (Math.random() * 2 - 1)
+        // 随机生成粒子的基本属性
+        const count = Math.round(400 + Math.random() * 1000); // 粒子数量随机
+        const size = 0.1 + Math.random() * 0.1; // 粒子大小随机
+        const texture = this.textures[Math.floor(Math.random() * this.textures.length)]; // 随机选择粒子纹理
+        const radius = 0.5 + Math.random(); // 粒子初始分布半径随机
+        const color = new THREE.Color();
+        color.setHSL(Math.random(), 1, 0.7); // 随机设置粒子颜色
+
+        // 初始化粒子位置、大小和时间乘数的数组
+        const positionsArray = new Float32Array(count * 3);
+        const sizesArray = new Float32Array(count);
+        const timeMultipliersArray = new Float32Array(count);
+        for (let i = 0; i < count; i++) {
+            const i3 = i * 3;
+            // 随机生成球面坐标，用于确定粒子的初始位置
+            const spherical = new THREE.Spherical(
+                radius * (0.75 + Math.random() * 0.25),
+                Math.random() * Math.PI,
+                Math.random() * Math.PI * 2
             );
-            const gravity = new THREE.Vector3(0, -gravityFactor, 0);
-            const velocity = baseVelocity.multiplyScalar(speedFactor).add(gravity);
-            const endColor = [Math.random(), Math.random(), Math.random()]; // 添加更多颜色变化
-            this.particles.push({
-                index: i,
-                startPos,
-                velocity,
-                life,
-                startColor: [1, 1, 1], // 初始化为白色
-                endColor // 随机颜色
-            });
+            // 从球面坐标转换为三维空间中的位置
+            const position = new THREE.Vector3().setFromSpherical(spherical);
 
-            // 设置粒子初始位置和颜色
-            const [x, y, z] = startPos;
-            const [r, g, b] = this.particles[i].startColor;
-            positions.set([x, y, z], i * 3);
-            colors.set([r, g, b], i * 3);
+            // 填充粒子位置数组
+            positionsArray[i3 + 0] = position.x;
+            positionsArray[i3 + 1] = position.y;
+            positionsArray[i3 + 2] = position.z;
+
+            // 随机设置粒子的初始大小
+            sizesArray[i] = Math.random();
+
+            // 随机设置粒子的时间乘数，用于控制粒子的生命周期
+            timeMultipliersArray[i] = 1 + Math.random();
         }
 
-        // 更新几何体的attributes
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        // 使用粒子的位置、大小等数据创建缓冲几何体
+        const newGeometry = new THREE.BufferGeometry();
+        // ...（几何体的进一步设置，代码未给出）
 
-        // 更新mesh的几何体并清理旧资源
-        this.mesh.geometry.dispose();
-        this.mesh.geometry = geometry;
-        this.mesh.material.sizeAttenuation = true;
-    }
+        // 设置几何体的位置属性
+        newGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positionsArray, 3));
+        // 设置几何体的大小属性
+        newGeometry.setAttribute('aSize', new THREE.Float32BufferAttribute(sizesArray, 1));
+        // 设置几何体的时间乘数属性
+        newGeometry.setAttribute('aTimeMultiplier', new THREE.Float32BufferAttribute(timeMultipliersArray, 1));
+
+        // 创建烟花效果的材质
+        texture.flipY = false;
+        const newMaterial = new THREE.ShaderMaterial({
+            vertexShader: fireworkVertexShader, // 顶点着色器
+            fragmentShader: fireworkFragmentShader, // 片段着色器
+            uniforms: {
+                uSize: new THREE.Uniform(size), // 粒子大小的统一变量
+                uResolution: new THREE.Uniform(this.demo.resolution), // 分辨率的统一变量
+                uTexture: new THREE.Uniform(texture), // 纹理的统一变量
+                uColor: new THREE.Uniform(color), // 颜色的统一变量
+                uProgress: new THREE.Uniform(0), // 动画进度的统一变量
+            },
+            transparent: true, // 确保粒子效果是透明的
+            depthWrite: false, // 禁止写入深度
+            blending: THREE.AdditiveBlending, // 使用加法混合增强亮度和效果
+        });
+
+        firework.geometry = newGeometry; // 更新几何体
+        firework.material = newMaterial; // 更新材质
+        const newMesh = new THREE.Points(firework.geometry, firework.material);
+        newMesh.position.copy(firework.position); // 复制位置
+        firework.mesh = newMesh
+        this.demo.scene.add(firework.mesh); // 添加到场景
+
+        // 使用gsap库进行材质动画处理，动画完成后自动销毁烟火对象
+        gsap.to(firework.material.uniforms.uProgress, {
+            value: 1, // 动画进度从0到1
+            duration: 6, // 动画持续6秒
+            ease: 'linear', // 线性缓动
+            onComplete: () => { // 动画完成后的操作
+                this.destroy(firework); // 销毁烟火对象
+            },
+        });
+    };
+
 }
 /**
  * 向场景中添加烟花效果。
  * @param {Object} demo - 包含场景(scene)等THREE.js相关对象的示例实例，用于添加和管理烟花对象。
  */
 export function addFireWork(demo) {
-    let fireworks = []; // 存储所有烟花对象的数组
-    // 创建并初始化一个烟花对象的函数保持不变
-    function createFirework() {
-        const position = new THREE.Vector3(Math.random() * 10 - 5, 0, Math.random() * 10 - 5);
-        fireworks.push(new Firework(demo, position));
-    }
-
-    const clock = new THREE.Clock(); // 用于动画的时钟控制
-
-    // 在animate函数中，考虑适时剔除远处粒子以优化性能
-    function animate() {
-        requestAnimationFrame(animate);
-        const deltaTime = clock.getDelta();
-        fireworks.forEach((fw, index) => {
-            fw.update(deltaTime);
-        });
-    }
-
-
-    // 启动动画循环
-    animate();
-
+    const fireworkController = new Firework(demo)
     // 添加键盘事件监听器
     document.addEventListener('keydown', (event) => {
         // 检查是否为空格键被按下
         if (event.code === 'Space') {
-            createFirework(); // 用户按下空格键时创建新的烟花
+            const position = new THREE.Vector3(Math.random() * 10 - 5, 0, Math.random() * 10 - 5);
+            fireworkController.launch(position); // 用户按下空格键时创建新的烟花
         }
     });
 }
@@ -246,8 +315,8 @@ export function addSmoke(demo) {
                     value: texture
                 }
             },
-            vertexShader: vertexShaderSource,
-            fragmentShader: fragmentShaderSource,
+            vertexShader: smokeVertexShader,
+            fragmentShader: smokeFragmentShader,
             blending: THREE.AdditiveBlending,
             depthWrite: false,
             transparent: true
