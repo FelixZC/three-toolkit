@@ -19,7 +19,6 @@ import {
 } from 'three/addons/loaders/DRACOLoader.js';
 import {
     addFireWork,
-    addSmoke,
     addStars,
 } from '../utils/three.js/effect'
 import {
@@ -286,4 +285,3 @@ addPhysicsTest(demo, world)
 addFireWork(demo)
 // 添加一定数量的星星
 addStars(demo, 1000); // 数量根据实际情况调整
-addSmoke(demo)

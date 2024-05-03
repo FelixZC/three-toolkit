@@ -1,7 +1,4 @@
 import * as THREE from 'three';
-import smokeVertexShader from '../../shaders/smoke/vertex-shader.glsl';
-import smokeFragmentShader from '../../shaders/smoke/fragment-shader.glsl';
-
 import fireworkVertexShader from '../../shaders/fireworks/vertex.glsl'
 import fireworkFragmentShader from '../../shaders/fireworks/fragment.glsl'
 import gsap from 'gsap';
@@ -287,68 +284,4 @@ export function addStars(demo, count) {
 
         demo.scene.add(star);
     }
-}
-
-/**
- * 为指定的Three.js演示demo添加烟雾效果。
- * @param {Object} demo 包含场景(scene)等Three.js演示相关对象的容器。
- */
-export function addSmoke(demo) {
-    // 加载烟雾纹理
-    const smokeTextureLoader = new THREE.TextureLoader();
-    smokeTextureLoader.load('src/image/textures/smoke_texture.png', (texture) => {
-        texture.minFilter = THREE.LinearFilter;
-
-        // 创建烟雾材质
-        const smokeMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-                time: {
-                    value: 0
-                },
-                color: {
-                    value: new THREE.Color(0x888888)
-                },
-                opacity: {
-                    value: 0.6
-                },
-                texture: {
-                    value: texture
-                }
-            },
-            vertexShader: smokeVertexShader,
-            fragmentShader: smokeFragmentShader,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            transparent: true
-        });
-
-        // 创建粒子几何体和粒子系统
-        const numParticles = 1000;
-        const geometry = new THREE.BufferGeometry();
-        const positions = new Float32Array(numParticles * 3);
-        const colors = new Float32Array(numParticles * 3);
-
-        // 随机生成粒子位置和颜色
-        for (let i = 0; i < numParticles; i++) {
-            const x = (Math.random() - 0.5) * 200;
-            const y = (Math.random() - 0.5) * 200;
-            const z = (Math.random() - 0.5) * 200;
-            positions.set([x, y, z], i * 3);
-            colors.set([x / 100 + 0.9, y / 100 + 0.9, z / 100 + 0.9], i * 3);
-        }
-
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-        // 创建并添加烟雾粒子系统到场景
-        const smokeParticles = new THREE.Points(geometry, smokeMaterial);
-        demo.scene.add(smokeParticles);
-
-        // 动画烟雾粒子
-        function animate() {
-            requestAnimationFrame(animate);
-            smokeMaterial.uniforms.time.value += 0.01;
-        }
-        animate();
-    });
 }
