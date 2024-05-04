@@ -2,8 +2,6 @@
 
 #### 介绍
 Web 3D练习，从入门到入土
-怎么都绕不开建模
-都是调参，真不如直接上Unity，性能又好，教程又多，社区丰富
 
 #### 流程
 1. 图形学 和 数学 打好基础
@@ -68,6 +66,10 @@ Three.js官方网站提供了丰富的示例来帮助开发者学习和理解如
    - 集成第三方物理引擎（如 Cannon.js 或 Ammo.js），使用对应的插件（如 `THREE.CannonPhysics` 或 `THREE.AmmoPhysics`）。
    - 为场景对象添加物理属性，处理碰撞检测、重力、刚体动力学等。
 
+6. **用户交互**
+   - 实现除 OrbitControls 以外的交互方式，如射线拾取（`THREE.Raycaster`）、鼠标拖拽旋转、触摸手势识别（如集成 Hammer.js）。
+   - 根据交互结果更新场景状态、触发特效或动画。
+
 待实现功能
 1. **后期处理效果**
    - 使用 `THREE.EffectComposer` 结合 `THREE.ShaderPass` 实现景深、模糊、色彩校正、噪点、像素化等后期处理效果。
@@ -77,15 +79,11 @@ Three.js官方网站提供了丰富的示例来帮助开发者学习和理解如
    - 添加背景音乐和空间化音效，利用 `THREE.AudioListener`、`THREE.Audio`、`THREE.PositionalAudio`。
    - 使用 `THREE.AudioLoader` 加载音频文件，并通过 `THREE.AudioAnalyser` 实现音频可视化。
 
-3. **用户交互**
-   - 实现除 OrbitControls 以外的交互方式，如射线拾取（`THREE.Raycaster`）、鼠标拖拽旋转、触摸手势识别（如集成 Hammer.js）。
-   - 根据交互结果更新场景状态、触发特效或动画。
-
-4. **多视图与分屏显示**
+3. **多视图与分屏显示**
    - 创建多个相机、渲染器和 canvas 元素，实现不同视角的并列显示或分屏布局。
    - 使用 `THREE.StereoCamera` 实现立体视图，或 `THREE.WebGLMultisampleRenderTarget` 提升抗锯齿效果。
 
-5. **性能优化**
+4. **性能优化**
    - 使用 `THREE.LOD` 实现细节层次，根据相机距离自动切换模型的低模和高模版本。
    - 采用 `THREE.BufferGeometry`、`THREE.InstancedBufferGeometry`、`THREE.InstancedMesh` 优化相似对象的渲染。
    - 利用 `renderer.info` 监控渲染统计信息，据此调整渲染策略以降低 GPU 负荷。
