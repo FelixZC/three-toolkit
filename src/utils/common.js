@@ -6,3 +6,10 @@ export function getRandomColor() {
     }
     return color;
 }
+
+export function getFileNameFromLocalUrl(localUrl) {
+    // 从路径中提取文件名
+    var fileName = localUrl.split('/').pop(); // 使用pop方法直接取出最后一部分作为文件名
+    // 返回文件名
+    return fileName;
+}

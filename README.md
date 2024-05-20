@@ -70,7 +70,7 @@ Three.js官方网站提供了丰富的示例来帮助开发者学习和理解如
    - 实现除 OrbitControls 以外的交互方式，如射线拾取（`THREE.Raycaster`）、鼠标拖拽旋转、触摸手势识别（如集成 Hammer.js）。
    - 根据交互结果更新场景状态、触发特效或动画。
 
-待实现功能
+**待实现功能**
 1. **后期处理效果**
    - 使用 `THREE.EffectComposer` 结合 `THREE.ShaderPass` 实现景深、模糊、色彩校正、噪点、像素化等后期处理效果。
    - 利用 `THREE.ShaderLib` 提供的着色器或编写自定义 GLSL 着色器实现独特的视觉效果。

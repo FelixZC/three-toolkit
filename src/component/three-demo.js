@@ -22,7 +22,8 @@ import {
     addStars,
 } from '../utils/three.js/effect'
 import {
-    getRandomColor
+    getRandomColor,
+    getFileNameFromLocalUrl
 } from '../utils/common';
 import * as CANNON from 'cannon-es';
 /**
@@ -60,80 +61,81 @@ async function loadTexturesFromAtlas(atlasPrefix, tilesNum) {
 
     return textures;
 }
+
+// 定义一个全局的DRACO解码器和GLTF加载器
+const dracoLoader = new DRACOLoader();
+dracoLoader.setDecoderPath('src/libs/draco/');
+const gltfLoader = new GLTFLoader();
+gltfLoader.setDRACOLoader(dracoLoader);
 /**
- * 加载GLTF模型到指定的演示实例中。
- * @param {String} modelUrl gltf模型加载路径
- * TODO:
- * 碰撞检测：在模型加载成功后，为模型创建相应的Cannon.js物理体，并设置合适的形状和材质。例如，如果模型是一个角色，你可以为它的底部创建一个胶囊形状的碰撞体，以模拟脚步。
- * 物理响应：将模型的物理体添加到Cannon.js的世界中，并在animate函数里同步模型的位置和旋转，以反映物理模拟的结果。
- * 事件触发：如果模型需要响应特定物理事件（如跳跃、移动），可以通过监听物理事件或直接在动画循环中根据物理状态调整模型行为。
+ * 加载GLTF模型到指定的演示实例中，并添加物理和动画。
+ * @param {String} modelUrl - gltf模型加载路径
+ * @param {Array} initialPosition - 模型初始位置 [x, y, z]
+ * @param {Array} initialScale - 模型初始缩放比例 [x, y, z]
+ * @returns {Promise} - 解析为包含模型、物理体和物理材质的对象
  */
-function loadGltfModel(modelUrl) {
+function loadGltfModel(modelUrl, initialPosition = [0, 1, 0], initialScale = [0.01, 0.01, 0.01], mass = 1) {
     return new Promise((resolve, reject) => {
         // 模型加载成功后的回调函数
         const onModelLoaded = (gltf) => {
-            // 获取模型并设置其位置和缩放比例
             const model = gltf.scene;
-            model.position.set(1, 1, 0);
-            model.scale.set(0.01, 0.01, 0.01);
-            // 将模型添加到演示场景中
+            model.position.set(...initialPosition);
+            model.scale.set(...initialScale);
+
             // 创建动画混合器并播放第一个动画
             const clock = new THREE.Clock();
             const mixer = new THREE.AnimationMixer(model);
-            mixer.clipAction(gltf.animations[0]).play();
+            if (gltf.animations.length > 0) {
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.play();
+            }
 
-            // 添加物理碰撞
+            // 计算模型的包围盒并创建相应的物理形状
             const box = new THREE.Box3().setFromObject(model);
             const size = box.getSize(new THREE.Vector3());
-            const center = box.getCenter(new THREE.Vector3());
+            const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
 
-            // 创建物理体
-            const shape = new CANNON.Box(new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2));
-            const gltfBodyMaterial = new CANNON.Material("gltfMaterial");
+            // 创建物理材质和物理体
+            const materialName = getFileNameFromLocalUrl(modelUrl)
+            const gltfBodyMaterial = new CANNON.Material(materialName);
             const gltfBody = new CANNON.Body({
-                mass: 1,
-                material: gltfBodyMaterial
-            }); // 质量设为0，表示静态物体，或者根据需要设定质量
-            gltfBody.addShape(shape);
-            gltfBody.position.copy(model.position);
-            gltfBody.quaternion.copy(model.quaternion);
-            /**
-             * 添加模型动画
-             */
+                mass, // 根据模型是否应该是动态的来设置质量
+                material: gltfBodyMaterial,
+                position: new CANNON.Vec3(...model.position.toArray()),
+                quaternion: new CANNON.Quaternion(...model.quaternion.toArray())
+            });
+            gltfBody.addShape(new CANNON.Box(halfExtents));
+            gltfBody.addEventListener("collide", (event) => {
+                console.log("Collision occurred!"); // 处理碰撞事件
+            });
+
             function animate() {
-                requestAnimationFrame(() => {
-                    // 确保模型的更新与物理世界同步
-                    model.position.copy(gltfBody.position);
-                    model.quaternion.copy(gltfBody.quaternion);
+                requestAnimationFrame(animate);
+                if (gltf.animations.length > 0) {
                     const delta = clock.getDelta();
                     mixer.update(delta);
-                    animate();
-                });
+                };
+                // 确保模型的更新与物理世界同步
+                model.position.copy(gltfBody.position);
+                model.quaternion.copy(gltfBody.quaternion);
             }
-            animate()
+            animate();
+
             resolve({
                 model,
                 gltfBody,
                 gltfBodyMaterial
-            })
+            });
         }
 
         // 模型加载失败时的错误处理函数
-        const onModelError = (e) => {
-            console.error(e);
-            reject(e)
+        const onModelError = (error) => {
+            console.error('Error loading model:', error);
+            reject(error);
         }
 
-        // 初始化DRACO解码器
-        const dracoLoader = new DRACOLoader();
-        dracoLoader.setDecoderPath('src/libs/draco/');
-
-        // 初始化GLTF加载器并设置DRACO解码器
-        const loader = new GLTFLoader();
-        loader.setDRACOLoader(dracoLoader);
-
-        // 加载模型，成功后调用onModelLoaded，失败后调用onModelError
-        loader.load(modelUrl, onModelLoaded, undefined, onModelError);
+        // 加载模型
+        gltfLoader.load(modelUrl, onModelLoaded, undefined, onModelError);
     });
 }
 
@@ -177,13 +179,20 @@ async function addPhysicsTest(demo, world) {
     scene.add(sphereMesh);
 
     const {
-        model,
-        gltfBody,
-        gltfBodyMaterial
-    } = await loadGltfModel('src/model/gltf/LittlestTokyo.glb')
+        model: planeModel,
+        gltfBody: planeGltfBody,
+        gltfBodyMaterial: planeGltfBodyMaterial
+    } = await loadGltfModel('src/model/gltf/plane.gltf', [-10, 30, -10], [0.25, 0.25, 0.25], 1)
+    demo.scene.add(planeModel);
+    world.addBody(planeGltfBody);
 
-    demo.scene.add(model);
-    world.addBody(gltfBody);
+    const {
+        model: houseModel,
+        gltfBody: houseGltfBody,
+        gltfBodyMaterial: houseGltfBodyMaterial
+    } = await loadGltfModel('src/model/gltf/littlest-tokyo.glb', [0, 2.2, 0], [0.01, 0.01, 0.01], 1)
+    demo.scene.add(houseModel);
+    world.addBody(houseGltfBody);
 
     // 渲染一个带多贴图的浮旋立方体
     const {
@@ -192,7 +201,7 @@ async function addPhysicsTest(demo, world) {
         cubePhysMat: floatCubePhysMat
     } = createCube({
         size: 3,
-        position: new THREE.Vector3(0, 6, 0),
+        position: new THREE.Vector3(0, 8, 0),
         mass: 0
     }, )
     const textures = await loadTexturesFromAtlas('src/image/textures/', 6);

@@ -19,7 +19,7 @@ export function createGround({
     size = 25,
     color = 0x808080,
     materialName = "GroundPhysMaterial",
-    yOffset = -1.1
+    yOffset = 0
 } = {}) {
     // 创建地面几何体
     const groundGeo = new THREE.BoxGeometry(size, 0.1, size);
