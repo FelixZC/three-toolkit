@@ -23,7 +23,7 @@ export default class ThreeDemo {
         this.width = window.innerWidth;
         this.height = window.innerHeight;
         this.aspectRatio = this.width / this.height;
-        this.devicePixelRatio = Math.min(window.devicePixelRatio, 2)
+        this.devicePixelRatio = window.devicePixelRatio
         this.resolution = new THREE.Vector2(this.width * this.devicePixelRatio, this.height * this.devicePixelRatio);
         this.gui = null
         // 初始化Three.js场景、相机和渲染器相关的属性。
@@ -188,7 +188,8 @@ export default class ThreeDemo {
     setUpRenderer() {
         // 创建WebGL渲染器并设置抗锯齿选项
         const renderer = new THREE.WebGLRenderer({
-            antialias: true
+            antialias: true,
+            logarithmicDepthBuffer: true,
         });
         // 获取场景和相机引用
         const scene = this.scene
@@ -229,11 +230,10 @@ export default class ThreeDemo {
     setUpLighting() {
         // 添加环境光和方向光到场景中
         const light = new THREE.AmbientLight(0xffffff, 2);
+        this.scene.add(light);
         this.directionalLight = new THREE.DirectionalLight(0xffffff, 2);
         this.directionalLight.position.set(1, 1, 1).normalize();
-        this.scene.add(light);
         this.scene.add(this.directionalLight);
-
     }
 
     /**
@@ -274,7 +274,7 @@ export default class ThreeDemo {
     setUpScene() {
         // 创建新的场景并设置雾效
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.Fog(592152, 1, 600);
+        this.scene.fog = new THREE.Fog("FFFFFF", 0.2, 0);
         // // 设置场景的背景颜色
         // this.scene.background = new THREE.Color(12575709);
     }
