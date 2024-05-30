@@ -3,8 +3,8 @@ import {
     setupMouseControls,
     setupAutoRotate,
     setupModelFlying
-} from '../utils/three.js/animate'
-import ThreeDemo from '../utils/three.js/init'
+} from '@/utils/three/animate'
+import ThreeDemo from '@/utils/three/init'
 import {
     createDefaultPhysicsWorld,
     createGround,
@@ -12,20 +12,20 @@ import {
     createSphere,
     addPhysicsForModel,
     configureContactMaterials
-} from '../utils/three.js/physics'
+} from '@/utils/three/physics'
 
 import {
     addFireWork,
     addStars,
-} from '../utils/three.js/effect'
+} from '@/utils/three/effect'
 import {
     getRandomColor
-} from '../utils/common';
+} from '@/utils/common';
 
 import {
     loadTexturesFromAtlas,
     useGltfLoader
-} from '../utils/three.js/loader'
+} from '@/utils/three/loader'
 
 /**
  * 创建一个简单的物理模拟场景
@@ -72,7 +72,7 @@ async function addPhysicsTest(demo, world) {
     /********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************** */
     //添加飞机
     const loadGltfModelFunc = useGltfLoader()
-    const planeModel = await loadGltfModelFunc('src/model/gltf/plane.gltf', [-5, 10, -5], [0.25, 0.25, 0.25])
+    const planeModel = await loadGltfModelFunc('/src/assets/model/gltf/plane.gltf', [-5, 10, -5], [0.25, 0.25, 0.25])
     const {
         gltfBody: planeGltfBody,
         gltfBodyMaterial: planeGltfBodyMaterial
@@ -81,7 +81,7 @@ async function addPhysicsTest(demo, world) {
     world.addBody(planeGltfBody);
     // setupModelFlying(demo, planeModel, planeGltfBody)
     //添加房子
-    const houseModel = await loadGltfModelFunc('src/model/gltf/littlest-tokyo.glb', [0, 2.2, 0], [0.01, 0.01, 0.01])
+    const houseModel = await loadGltfModelFunc('/src/assets/model/gltf/littlest-tokyo.glb', [0, 2.2, 0], [0.01, 0.01, 0.01])
     const {
         gltfBody: houseGltfBody,
         gltfBodyMaterial: houseGltfBodyMaterial
@@ -99,7 +99,7 @@ async function addPhysicsTest(demo, world) {
         position: new THREE.Vector3(0, 8, 0),
         mass: 0
     }, )
-    const textures = await loadTexturesFromAtlas('src/image/textures/', 6);
+    const textures = await loadTexturesFromAtlas('/src/assets/image/textures/', 6);
     // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
     floatCubeMesh.material = textures.map(texture => new THREE.MeshBasicMaterial({
         map: texture

@@ -49,7 +49,7 @@ export async function loadTexturesFromAtlas(atlasPrefix, tilesNum) {
 export function useGltfLoader() {
     // 初始化DRACO解码器和GLTF加载器
     const dracoLoader = new DRACOLoader();
-    dracoLoader.setDecoderPath('src/libs/draco/'); // 设置DRACO解码器的路径
+    dracoLoader.setDecoderPath('/src/assets/libs/draco/'); // 设置DRACO解码器的路径
     const gltfLoader = new GLTFLoader();
     gltfLoader.setDRACOLoader(dracoLoader); // 将DRACO解码器设置给GLTF加载器
 

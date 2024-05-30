@@ -1,17 +1,10 @@
 import * as THREE from "three";
-import {
-    Reflector
-} from "three/examples/jsm/objects/Reflector";
-import ThreeDemo from '../utils/three.js/init'
-import {
-    OrbitControls
-} from "three/examples/jsm/controls/OrbitControls";
-import chinaJson from "../data/china-mercator.json";
+import ThreeDemo from '@/utils/three/init'
+import chinaJson from "@/assets/data/china-mercator.json";
 // 初始化场景和相机
 const {
     scene,
     camera,
-    renderer
 } = new ThreeDemo({
     isSetUpStats: true, // 是否设置统计信息显示
     isSetUpControls: true, // 是否设置相机控制
