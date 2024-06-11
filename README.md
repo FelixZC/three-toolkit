@@ -24,6 +24,12 @@ Three.js官方网站提供了丰富的示例来帮助开发者学习和理解如
 
 每个示例通常都附带源代码，并且可以直接在网页上查看运行效果，这对于学习特定技术点非常有帮助。此外，官方网站还提供了详尽的API文档和指南，帮助开发者深入学习Three.js的各个方面。
 
+#### 示例
+
+<img src="docs/images/three.png" alt="这是图片的描述0">
+<img src="docs/images/three(1).png" alt="这是图片的描述1">
+<img src="docs/images/three(2).png" alt="这是图片的描述1">
+<img src="docs/images/three(3).png" alt="这是图片的描述1">
 
 #### 功能
 **已实现功能**
