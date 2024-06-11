@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import fireworkVertexShader from '../../shaders/fireworks/vertex.glsl'
-import fireworkFragmentShader from '../../shaders/fireworks/fragment.glsl'
+import fireworkVertexShader from '@/shaders/fireworks/vertex.glsl'
+import fireworkFragmentShader from '@/shaders/fireworks/fragment.glsl'
 import gsap from 'gsap';
 /**
  * 烟花爆炸效果引用了大佬的效果(reference:):https://github.com/jamestw13/fireworks-shaders-threejs

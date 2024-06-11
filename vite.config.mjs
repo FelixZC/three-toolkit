@@ -9,13 +9,18 @@ export default defineConfig({
   root: process.cwd(),
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src') // 定义 @ 指向 src 目录
+      '@': path.resolve(__dirname, './src'), // 定义 @ 指向 src 目录
+      '@src': path.resolve(__dirname, './src') // 定义 @ 指向 src 目录
     },
+  },
+  server: {
+    host: '0.0.0.0',
+    port: 3000,
+    open: true,
   },
   build: {
     target: 'esnext',
     minify: false,
-    sourcemap: true,
     outDir: './dist', // 输出目录
     emptyOutDir: true, // 是否清空输出目录
     sourcemap: true, // 是否生成 source map
