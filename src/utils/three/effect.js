@@ -57,14 +57,14 @@ class Firework {
         const textureLoader = new THREE.TextureLoader(); // 创建纹理加载器
         // 加载并存储烟花粒子的纹理图片
         this.textures = [
-            textureLoader.load('/src/assets/image/textures/particles/1.png'),
-            textureLoader.load('/src/assets/image/textures/particles/2.png'),
-            textureLoader.load('/src/assets/image/textures/particles/3.png'),
-            textureLoader.load('/src/assets/image/textures/particles/4.png'),
-            textureLoader.load('/src/assets/image/textures/particles/5.png'),
-            textureLoader.load('/src/assets/image/textures/particles/6.png'),
-            textureLoader.load('/src/assets/image/textures/particles/7.png'),
-            textureLoader.load('/src/assets/image/textures/particles/8.png'),
+            textureLoader.load('/src/assets/images/textures/particles/1.png'),
+            textureLoader.load('/src/assets/images/textures/particles/2.png'),
+            textureLoader.load('/src/assets/images/textures/particles/3.png'),
+            textureLoader.load('/src/assets/images/textures/particles/4.png'),
+            textureLoader.load('/src/assets/images/textures/particles/5.png'),
+            textureLoader.load('/src/assets/images/textures/particles/6.png'),
+            textureLoader.load('/src/assets/images/textures/particles/7.png'),
+            textureLoader.load('/src/assets/images/textures/particles/8.png'),
         ];
     }
     /**
@@ -262,7 +262,7 @@ export function addFireWork(demo) {
 export function addStars(demo, count) {
     // 加载星星纹理
     const textureLoader = new THREE.TextureLoader();
-    const starTexture = textureLoader.load('/src/assets/image/textures/star_texture.png'); // 替换为实际星星纹理的路径
+    const starTexture = textureLoader.load('/src/assets/images/textures/star_texture.png'); // 替换为实际星星纹理的路径
 
     // 创建星星材质
     const starMaterial = new THREE.PointsMaterial({

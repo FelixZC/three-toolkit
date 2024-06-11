@@ -99,7 +99,7 @@ async function addPhysicsTest(demo, world) {
         position: new THREE.Vector3(0, 8, 0),
         mass: 0
     }, )
-    const textures = await loadTexturesFromAtlas('/src/assets/image/textures/', 6);
+    const textures = await loadTexturesFromAtlas('/src/assets/images/textures/', 6);
     // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
     floatCubeMesh.material = textures.map(texture => new THREE.MeshBasicMaterial({
         map: texture
