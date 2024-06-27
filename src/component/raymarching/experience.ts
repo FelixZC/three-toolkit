@@ -1,16 +1,16 @@
-import * as kokomi from "kokomi.js";
+import * as kokomi from 'kokomi.js';
 
-import World from "./world";
+import World from './world';
 
-import Debug from "@/debug";
+import Debug from '@/debug';
 
-import resources from "./resources";
+import resources from './resources';
 
 export default class Experience extends kokomi.Base {
   world: World;
   debug: Debug;
   am: kokomi.AssetManager;
-  constructor(sel = "#sketch") {
+  constructor(sel = '#sketch') {
     super(sel);
 
     (window as any).experience = this;

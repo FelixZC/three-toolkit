@@ -1,8 +1,8 @@
-import * as kokomi from "kokomi.js";
-import sliderVertexShader from "@/shaders/slider/vert.glsl";
-import sliderFragmentShader from "@/shaders/slider/frag.glsl";
-import Experience from "./experience";
-import * as THREE from "three";
+import * as kokomi from 'kokomi.js';
+import sliderVertexShader from '@/shaders/slider/vert.glsl';
+import sliderFragmentShader from '@/shaders/slider/frag.glsl';
+import Experience from './experience';
+import * as THREE from 'three';
 /**
  * Slider类继承于kokomi.Component，用于创建一个滑动相册效果。
  * @param {HTMLElement} base - 组件的基元素。
@@ -29,10 +29,12 @@ export default class Slider extends kokomi.Component {
     this.params = params;
 
     // 创建无限画廊实例
-    const elements = document.querySelectorAll(".gallery-item") as unknown as kokomi.InfiniteGallery['elList']
+    const elements = document.querySelectorAll(
+      '.gallery-item'
+    ) as unknown as kokomi.InfiniteGallery['elList'];
     this.ig = new kokomi.InfiniteGallery(this.base, {
       elList: [...elements], // 目标元素列表
-      direction: "horizontal", // 滑动方向
+      direction: 'horizontal', // 滑动方向
       gap: 128, // 元素之间的间距
       vertexShader: sliderVertexShader, //顶点着色器
       fragmentShader: sliderFragmentShader, // 片元着色器
@@ -56,19 +58,9 @@ export default class Slider extends kokomi.Component {
     // 如果处于调试模式，设置调试界面
     const debug = this.base.debug;
     if (debug.active && debug.ui) {
-      const debugFolder = debug.ui.addFolder("gallery");
-      debugFolder
-        .add(params.uDistortX, "value")
-        .min(0)
-        .max(2)
-        .step(0.01)
-        .name("distortX");
-      debugFolder
-        .add(params.uDistortZ, "value")
-        .min(0)
-        .max(2)
-        .step(0.01)
-        .name("distortZ");
+      const debugFolder = debug.ui.addFolder('gallery');
+      debugFolder.add(params.uDistortX, 'value').min(0).max(2).step(0.01).name('distortX');
+      debugFolder.add(params.uDistortZ, 'value').min(0).max(2).step(0.01).name('distortZ');
     }
 
     // 初始化鼠标滚轮和拖拽检测
@@ -77,7 +69,7 @@ export default class Slider extends kokomi.Component {
 
     this.dd = new kokomi.DragDetecter(this.base);
     this.dd.detectDrag();
-    this.dd.on("drag", (delta: { x: number, y: number }) => {
+    this.dd.on('drag', (delta: { x: number; y: number }) => {
       this.ws.scroll.target -= delta[this.ig.dimensionType] * 2;
     });
   }
@@ -96,17 +88,16 @@ export default class Slider extends kokomi.Component {
    */
   update() {
     this.ws.syncScroll();
-    const {
-      current,
-      delta
-    } = this.ws.scroll;
+    const { current, delta } = this.ws.scroll;
     this.ig.sync(current);
 
     // 遍历每个相册元素，更新其着色器参数
-    this.ig.iterate((maku) => {
+    this.ig.iterate(maku => {
       (maku.mesh.material as THREE.ShaderMaterial).uniforms.uVelocity.value = delta;
-      (maku.mesh.material as THREE.ShaderMaterial).uniforms.uDistortX.value = this.params.uDistortX.value;
-      (maku.mesh.material as THREE.ShaderMaterial).uniforms.uDistortZ.value = this.params.uDistortZ.value;
+      (maku.mesh.material as THREE.ShaderMaterial).uniforms.uDistortX.value =
+        this.params.uDistortX.value;
+      (maku.mesh.material as THREE.ShaderMaterial).uniforms.uDistortZ.value =
+        this.params.uDistortZ.value;
     });
   }
 }

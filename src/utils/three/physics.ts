@@ -4,38 +4,37 @@ import * as THREE from 'three';
 
 // 定义 Cannon 物理材质的接口
 interface CannonMaterialOptions {
-    // 这里可以添加物理材质的属性，例如摩擦力等
-    friction?: number;
-    restitution?: number;
+  // 这里可以添加物理材质的属性，例如摩擦力等
+  friction?: number;
+  restitution?: number;
 }
-
 
 /**
  * 直接初始化并配置一个默认的Cannon物理世界。
  * @returns {CANNON.World} 创建的物理世界实例，已含默认地面。
  */
 export function createDefaultPhysicsWorld(): CANNON.World {
-    const cannonWorld = new CANNON.World();
-    cannonWorld.gravity.set(0, -9.82, 0);
-    cannonWorld.broadphase = new CANNON.NaiveBroadphase();
-    // solver 应该是一个函数或方法，这里可能是一个错误
-    cannonWorld.solver.solve(10, cannonWorld); // 这行代码可能有误
-    cannonWorld.allowSleep = true;
-    return cannonWorld;
+  const cannonWorld = new CANNON.World();
+  cannonWorld.gravity.set(0, -9.82, 0);
+  cannonWorld.broadphase = new CANNON.NaiveBroadphase();
+  // solver 应该是一个函数或方法，这里可能是一个错误
+  cannonWorld.solver.solve(10, cannonWorld); // 这行代码可能有误
+  cannonWorld.allowSleep = true;
+  return cannonWorld;
 }
 
 // 定义 createGround 函数的参数接口
 interface CreateGroundOptions {
-    size?: number;
-    color?: number;
-    yOffset?: number;
-    meshMaterialOptions?: object;
-    physicsMaterialOptions?: CannonMaterialOptions;
+  size?: number;
+  color?: number;
+  yOffset?: number;
+  meshMaterialOptions?: object;
+  physicsMaterialOptions?: CannonMaterialOptions;
 }
 
 /**
  * 创建一个地面对象，包括地面的物理模拟和渲染。
- * 
+ *
  * @param {Object} options 配置项对象，可包含以下属性：
  *   - size: 地面的尺寸，默认为25。
  *   - color: 地面的颜色，默认为0x808080（灰色）。
@@ -48,61 +47,61 @@ interface CreateGroundOptions {
  *   - groundPhysMat: 地面的物理材质对象。
  */
 export function createGround({
-    size = 25,
-    color = 0x808080,
-    yOffset = 0,
-    meshMaterialOptions = {},
-    physicsMaterialOptions,
+  size = 25,
+  color = 0x808080,
+  yOffset = 0,
+  meshMaterialOptions = {},
+  physicsMaterialOptions,
 }: CreateGroundOptions = {}): {
-    groundBody: CANNON.Body;
-    groundMesh: THREE.Mesh;
-    groundPhysMat: CANNON.Material;
+  groundBody: CANNON.Body;
+  groundMesh: THREE.Mesh;
+  groundPhysMat: CANNON.Material;
 } {
-    // 创建一个立方体几何体作为地面的基础形状
-    const groundGeo = new THREE.BoxGeometry(size, 0.1, size);
+  // 创建一个立方体几何体作为地面的基础形状
+  const groundGeo = new THREE.BoxGeometry(size, 0.1, size);
 
-    // 使用提供的颜色和额外的材质选项创建地面的渲染材质
-    const groundMaterial = new THREE.MeshStandardMaterial({
-        color,
-        ...meshMaterialOptions,
-    });
+  // 使用提供的颜色和额外的材质选项创建地面的渲染材质
+  const groundMaterial = new THREE.MeshStandardMaterial({
+    color,
+    ...meshMaterialOptions,
+  });
 
-    // 创建用于物理模拟的地面材质
-    const groundPhysMat = new CANNON.Material(physicsMaterialOptions);
+  // 创建用于物理模拟的地面材质
+  const groundPhysMat = new CANNON.Material(physicsMaterialOptions);
 
-    // 设置地面的物理属性，如质量、材质，并定义其形状
-    const groundBody = new CANNON.Body({
-        mass: 0, // 地面无质量
-        material: groundPhysMat
-    });
-    groundBody.addShape(new CANNON.Box(new CANNON.Vec3(size / 2, 0.1 / 2, size / 2))); // 设置地面的物理形状
-    groundBody.position.set(0, yOffset, 0); // 将地面位置设置为配置的Y偏移值
+  // 设置地面的物理属性，如质量、材质，并定义其形状
+  const groundBody = new CANNON.Body({
+    mass: 0, // 地面无质量
+    material: groundPhysMat,
+  });
+  groundBody.addShape(new CANNON.Box(new CANNON.Vec3(size / 2, 0.1 / 2, size / 2))); // 设置地面的物理形状
+  groundBody.position.set(0, yOffset, 0); // 将地面位置设置为配置的Y偏移值
 
-    // 创建地面的Three网格对象，并设置其接收阴影的属性
-    const groundMesh = new THREE.Mesh(groundGeo, groundMaterial);
-    groundMesh.receiveShadow = true;
-    groundMesh.position.copy(groundBody.position); // 将网格位置与物理体位置同步
+  // 创建地面的Three网格对象，并设置其接收阴影的属性
+  const groundMesh = new THREE.Mesh(groundGeo, groundMaterial);
+  groundMesh.receiveShadow = true;
+  groundMesh.position.copy(groundBody.position); // 将网格位置与物理体位置同步
 
-    return {
-        groundBody,
-        groundMesh,
-        groundPhysMat
-    };
+  return {
+    groundBody,
+    groundMesh,
+    groundPhysMat,
+  };
 }
 
 // 定义 createCube 函数的参数接口
 interface CreateCubeOptions {
-    size?: number;
-    position?: THREE.Vector3;
-    mass?: number;
-    color?: number;
-    meshMaterialOptions?: object;
-    physicsMaterialOptions?: CannonMaterialOptions;
+  size?: number;
+  position?: THREE.Vector3;
+  mass?: number;
+  color?: number;
+  meshMaterialOptions?: object;
+  physicsMaterialOptions?: CannonMaterialOptions;
 }
 
 /**
  * 创建一个带有物理模拟的立方体。
- * 
+ *
  * @param {Object} options 配置对象，包含立方体的各种属性。
  * @param {number} options.size 立方体的尺寸，默认为1。
  * @param {THREE.Vector3} options.position 立方体的初始位置，默认为(5, 5, 5)。
@@ -113,77 +112,77 @@ interface CreateCubeOptions {
  * @returns {Object} 返回一个包含立方体网格（cubeMesh）、立方体物理体（cubeBody）和立方体物理材质（cubePhysMat）的对象。
  */
 export function createCube({
-    size = 1,
-    position = new THREE.Vector3(5, 5, 5),
-    mass = 1,
-    color = 0xff0000,
-    meshMaterialOptions = {},
-    physicsMaterialOptions,
+  size = 1,
+  position = new THREE.Vector3(5, 5, 5),
+  mass = 1,
+  color = 0xff0000,
+  meshMaterialOptions = {},
+  physicsMaterialOptions,
 }: CreateCubeOptions = {}): {
-    cubeMesh: THREE.Mesh;
-    cubeBody: CANNON.Body;
-    cubePhysMat: CANNON.Material;
+  cubeMesh: THREE.Mesh;
+  cubeBody: CANNON.Body;
+  cubePhysMat: CANNON.Material;
 } {
-    // 创建立方体几何体
-    const cubeGeo = new THREE.BoxGeometry(size, size, size);
+  // 创建立方体几何体
+  const cubeGeo = new THREE.BoxGeometry(size, size, size);
 
-    // 创建立方体材质
-    const cubeMaterial = new THREE.MeshStandardMaterial({
-        color,
-        ...meshMaterialOptions
+  // 创建立方体材质
+  const cubeMaterial = new THREE.MeshStandardMaterial({
+    color,
+    ...meshMaterialOptions,
+  });
+
+  // 创建物理材质
+  const cubePhysMat = new CANNON.Material(physicsMaterialOptions);
+
+  // 创建立方体物理体
+  const cubeBody = new CANNON.Body({
+    mass,
+    material: cubePhysMat,
+  });
+  cubeBody.addShape(new CANNON.Box(new CANNON.Vec3(size / 2, size / 2, size / 2)));
+  cubeBody.position.copy(position as unknown as Vec3);
+
+  // 创建立方体的Three网格
+  const cubeMesh = new THREE.Mesh(cubeGeo, cubeMaterial);
+  cubeMesh.castShadow = true; // 立方体投射阴影
+  cubeMesh.position.copy(cubeBody.position); // 初始位置设置
+
+  /**
+   * 动画函数，用于每帧更新立方体的网格位置和旋转，以匹配物理体的状态。
+   */
+  function animate() {
+    requestAnimationFrame(() => {
+      cubeMesh.position.copy(cubeBody.position); // 更新位置
+      cubeMesh.quaternion.copy(cubeBody.quaternion); // 更新旋转
+      animate();
     });
-
-    // 创建物理材质
-    const cubePhysMat = new CANNON.Material(physicsMaterialOptions);
-
-    // 创建立方体物理体
-    const cubeBody = new CANNON.Body({
-        mass,
-        material: cubePhysMat
-    });
-    cubeBody.addShape(new CANNON.Box(new CANNON.Vec3(size / 2, size / 2, size / 2)));
-    cubeBody.position.copy(position as unknown as Vec3);
-
-    // 创建立方体的Three网格
-    const cubeMesh = new THREE.Mesh(cubeGeo, cubeMaterial);
-    cubeMesh.castShadow = true; // 立方体投射阴影
-    cubeMesh.position.copy(cubeBody.position); // 初始位置设置
-
-    /**
-     * 动画函数，用于每帧更新立方体的网格位置和旋转，以匹配物理体的状态。
-     */
-    function animate() {
-        requestAnimationFrame(() => {
-            cubeMesh.position.copy(cubeBody.position); // 更新位置
-            cubeMesh.quaternion.copy(cubeBody.quaternion); // 更新旋转
-            animate();
-        });
-    }
-    if (mass != 0) {
-        animate(); // 如果质量不为0，则开始动画
-    }
-    return {
-        cubeMesh,
-        cubeBody,
-        cubePhysMat
-    };
+  }
+  if (mass != 0) {
+    animate(); // 如果质量不为0，则开始动画
+  }
+  return {
+    cubeMesh,
+    cubeBody,
+    cubePhysMat,
+  };
 }
 
 // 定义 createSphere 函数的参数接口
 interface CreateSphereOptions {
-    radius?: number;
-    position?: THREE.Vector3;
-    velocity?: THREE.Vector3;
-    angularVelocity?: THREE.Vector3;
-    color?: string | number;
-    mass?: number;
-    meshMaterialOptions?: object;
-    physicsMaterialOptions?: CannonMaterialOptions;
+  radius?: number;
+  position?: THREE.Vector3;
+  velocity?: THREE.Vector3;
+  angularVelocity?: THREE.Vector3;
+  color?: string | number;
+  mass?: number;
+  meshMaterialOptions?: object;
+  physicsMaterialOptions?: CannonMaterialOptions;
 }
 
 /**
  * 创建一个带有物理模拟的球体。
- * 
+ *
  * @param {Object} 参数对象，包含球体的各种属性。
  * @param {number} radius 球体的半径，默认为0.5。
  * @param {THREE.Vector3} position 球体的初始位置，默认为新的THREE.Vector3()。
@@ -196,80 +195,80 @@ interface CreateSphereOptions {
  * @returns {Object} 返回一个包含球体物理体、网格和物理材质的对象。
  */
 export function createSphere({
-    radius = 0.5,
-    position = new THREE.Vector3(),
-    velocity = new THREE.Vector3(),
-    angularVelocity = new THREE.Vector3(),
-    color = '0x00ff00',
-    mass = 1,
-    meshMaterialOptions = {},
-    physicsMaterialOptions,
+  radius = 0.5,
+  position = new THREE.Vector3(),
+  velocity = new THREE.Vector3(),
+  angularVelocity = new THREE.Vector3(),
+  color = '0x00ff00',
+  mass = 1,
+  meshMaterialOptions = {},
+  physicsMaterialOptions,
 }: CreateSphereOptions): {
-    sphereMesh: THREE.Mesh;
-    sphereBody: CANNON.Body;
-    spherePhysMat: CANNON.Material;
+  sphereMesh: THREE.Mesh;
+  sphereBody: CANNON.Body;
+  spherePhysMat: CANNON.Material;
 } {
-    // 创建球体几何体
-    const sphereGeo = new THREE.SphereGeometry(radius, 32, 32);
+  // 创建球体几何体
+  const sphereGeo = new THREE.SphereGeometry(radius, 32, 32);
 
-    // 创建球体材质
-    const sphereMaterial = new THREE.MeshStandardMaterial({
-        color,
-        ...meshMaterialOptions
+  // 创建球体材质
+  const sphereMaterial = new THREE.MeshStandardMaterial({
+    color,
+    ...meshMaterialOptions,
+  });
+
+  // 创建球体物理材质
+  const spherePhysMat = new CANNON.Material(physicsMaterialOptions);
+
+  // 创建球体物理体
+  const sphereBody = new CANNON.Body({
+    mass,
+    material: spherePhysMat,
+  });
+  sphereBody.addShape(new CANNON.Sphere(radius));
+  sphereBody.position.copy(position as unknown as Vec3);
+  sphereBody.velocity.copy(velocity as unknown as Vec3);
+  sphereBody.angularVelocity.copy(angularVelocity as unknown as Vec3);
+
+  // 创建球体的Three网格
+  const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
+  sphereMesh.castShadow = true; // 球体投射阴影
+  sphereMesh.position.copy(sphereBody.position); // 初始位置设置
+
+  /**
+   * 动画函数，用于每帧更新球体的网格位置和旋转，以匹配其物理体的状态。
+   */
+  function animate() {
+    requestAnimationFrame(() => {
+      sphereMesh.position.copy(sphereBody.position);
+      sphereMesh.quaternion.copy(sphereBody.quaternion);
+      animate();
     });
-
-    // 创建球体物理材质
-    const spherePhysMat = new CANNON.Material(physicsMaterialOptions);
-
-    // 创建球体物理体
-    const sphereBody = new CANNON.Body({
-        mass,
-        material: spherePhysMat
-    });
-    sphereBody.addShape(new CANNON.Sphere(radius));
-    sphereBody.position.copy(position as unknown as Vec3);
-    sphereBody.velocity.copy(velocity as unknown as Vec3);
-    sphereBody.angularVelocity.copy(angularVelocity as unknown as Vec3);
-
-    // 创建球体的Three网格
-    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
-    sphereMesh.castShadow = true; // 球体投射阴影
-    sphereMesh.position.copy(sphereBody.position); // 初始位置设置
-
-    /**
-     * 动画函数，用于每帧更新球体的网格位置和旋转，以匹配其物理体的状态。
-     */
-    function animate() {
-        requestAnimationFrame(() => {
-            sphereMesh.position.copy(sphereBody.position);
-            sphereMesh.quaternion.copy(sphereBody.quaternion);
-            animate();
-        });
-    }
-    if (mass != 0) {
-        animate(); // 如果球体有质量，则开始动画更新
-    }
-    return {
-        sphereBody,
-        sphereMesh,
-        spherePhysMat
-    };
+  }
+  if (mass != 0) {
+    animate(); // 如果球体有质量，则开始动画更新
+  }
+  return {
+    sphereBody,
+    sphereMesh,
+    spherePhysMat,
+  };
 }
 
 // 定义 configureContactMaterials 函数的参数接口
 interface ConfigureContactMaterialsOptions {
-    friction?: number;
-    restitution?: number;
-    contactEquationStiffness?: number;
-    contactEquationRelaxation?: number;
-    frictionStiffness?: number;
-    frictionRelaxation?: number;
-    // 可以根据 CANNON 的 ContactMaterial 选项添加更多属性
+  friction?: number;
+  restitution?: number;
+  contactEquationStiffness?: number;
+  contactEquationRelaxation?: number;
+  frictionStiffness?: number;
+  frictionRelaxation?: number;
+  // 可以根据 CANNON 的 ContactMaterial 选项添加更多属性
 }
 
 /**
  * 配置两种材质之间的接触属性。
- * 
+ *
  * @param {CANNON.World} world - Cannon物理世界的实例。
  * @param {CANNON.Material} materialA - 第一种物理材质。
  * @param {CANNON.Material} materialB - 第二种物理材质。
@@ -278,23 +277,20 @@ interface ConfigureContactMaterialsOptions {
  * @param {number} [options.restitution=0.3] - 接触恢复系数（弹性），默认为0.3。
  */
 export function configureContactMaterials(
-    world: CANNON.World,
-    materialA: CANNON.Material,
-    materialB: CANNON.Material,
-    options: ConfigureContactMaterialsOptions = {}
+  world: CANNON.World,
+  materialA: CANNON.Material,
+  materialB: CANNON.Material,
+  options: ConfigureContactMaterialsOptions = {}
 ): void {
-    const {
-        friction = 0.3,
-        restitution = 0.3,
-    } = options;
+  const { friction = 0.3, restitution = 0.3 } = options;
 
-    const contactMaterial = new CANNON.ContactMaterial(materialA, materialB, {
-        friction,
-        restitution,
-        ...options
-    });
+  const contactMaterial = new CANNON.ContactMaterial(materialA, materialB, {
+    friction,
+    restitution,
+    ...options,
+  });
 
-    world.addContactMaterial(contactMaterial);
+  world.addContactMaterial(contactMaterial);
 }
 
 /**
@@ -305,43 +301,43 @@ export function configureContactMaterials(
  * @returns {Object} 包含模型、物理体和物理材质的对象。
  */
 export function addPhysicsForModel(
-    model: THREE.Group<THREE.Object3DEventMap>,
-    materialOptions?: CannonMaterialOptions,
-    mass: number = 1
+  model: THREE.Group<THREE.Object3DEventMap>,
+  materialOptions?: CannonMaterialOptions,
+  mass: number = 1
 ): {
-    model: THREE.Group<THREE.Object3DEventMap>;
-    gltfBody: CANNON.Body;
-    gltfBodyMaterial: CANNON.Material;
+  model: THREE.Group<THREE.Object3DEventMap>;
+  gltfBody: CANNON.Body;
+  gltfBodyMaterial: CANNON.Material;
 } {
-    // 计算模型的包围盒并创建相应的物理形状
-    const box = new THREE.Box3().setFromObject(model);
-    const size = box.getSize(new THREE.Vector3());
-    const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
+  // 计算模型的包围盒并创建相应的物理形状
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
 
-    // 创建物理材质和物理体
-    const gltfBodyMaterial = new CANNON.Material(materialOptions);
-    const gltfBody = new CANNON.Body({
-        mass,
-        material: gltfBodyMaterial,
-        position: new CANNON.Vec3(...model.position.toArray()),
-        quaternion: new CANNON.Quaternion(...model.quaternion.toArray())
-    });
-    gltfBody.addShape(new CANNON.Box(halfExtents));
-    gltfBody.addEventListener("collide", () => {
-        console.log("Collision occurred!");
-    });
+  // 创建物理材质和物理体
+  const gltfBodyMaterial = new CANNON.Material(materialOptions);
+  const gltfBody = new CANNON.Body({
+    mass,
+    material: gltfBodyMaterial,
+    position: new CANNON.Vec3(...model.position.toArray()),
+    quaternion: new CANNON.Quaternion(...model.quaternion.toArray()),
+  });
+  gltfBody.addShape(new CANNON.Box(halfExtents));
+  gltfBody.addEventListener('collide', () => {
+    console.log('Collision occurred!');
+  });
 
-    // 启动动画循环以保持模型和物理世界的状态同步
-    function animate() {
-        requestAnimationFrame(animate);
-        model.position.copy(gltfBody.position);
-        model.quaternion.copy(gltfBody.quaternion);
-    }
-    animate();
+  // 启动动画循环以保持模型和物理世界的状态同步
+  function animate() {
+    requestAnimationFrame(animate);
+    model.position.copy(gltfBody.position);
+    model.quaternion.copy(gltfBody.quaternion);
+  }
+  animate();
 
-    return {
-        model,
-        gltfBody,
-        gltfBodyMaterial
-    };
+  return {
+    model,
+    gltfBody,
+    gltfBodyMaterial,
+  };
 }

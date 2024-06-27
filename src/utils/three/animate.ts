@@ -49,7 +49,11 @@ export function setupMouseControls(object3D: THREE.Object3D, sensitivity: number
 /**
  * 设置three立方体自旋转的事件监听器
  */
-export function setupAutoRotate(object3D: THREE.Object3D, axis: 'X' | 'Y' | 'Z' = 'Y', speed: number = 0.001) {
+export function setupAutoRotate(
+  object3D: THREE.Object3D,
+  axis: 'X' | 'Y' | 'Z' = 'Y',
+  speed: number = 0.001
+) {
   let lastTime = 0;
 
   // 定义旋转轴向量
@@ -71,7 +75,7 @@ export function setupAutoRotate(object3D: THREE.Object3D, axis: 'X' | 'Y' | 'Z' 
 
   const quaternion = new THREE.Quaternion();
 
-  const onAnimationFrame: FrameRequestCallback = (time) => {
+  const onAnimationFrame: FrameRequestCallback = time => {
     const deltaTime = time - lastTime;
     // 使用四元数旋转，以避免万向节锁问题
     quaternion.setFromAxisAngle(rotationAxis, speed * deltaTime);
@@ -83,7 +87,6 @@ export function setupAutoRotate(object3D: THREE.Object3D, axis: 'X' | 'Y' | 'Z' 
 
   requestAnimationFrame(onAnimationFrame);
 }
-
 
 /**
  * 设置并启动模型的飞行动画。
@@ -98,11 +101,7 @@ export function setupModelFlying(demo: Demo, model: THREE.Object3D, modelBody?: 
     return;
   }
 
-  const {
-    renderer,
-    scene,
-    camera
-  } = demo;
+  const { renderer, scene, camera } = demo;
 
   // 模型的初始位置
   const lastPosition = model.position.clone();
@@ -113,7 +112,7 @@ export function setupModelFlying(demo: Demo, model: THREE.Object3D, modelBody?: 
    * 动画循环函数
    * @param {number} time 当前时间戳（毫秒）
    */
-  const animate: FrameRequestCallback = (time) => {
+  const animate: FrameRequestCallback = time => {
     requestAnimationFrame(animate);
     const rotationSpeed = Math.PI / 2; // 每秒旋转的弧度数
     const radius = 5; // 旋转半径
@@ -140,7 +139,7 @@ export function setupModelFlying(demo: Demo, model: THREE.Object3D, modelBody?: 
 
     // 渲染场景
     renderer.render(scene, camera);
-  }
+  };
 
   // 启动动画
   requestAnimationFrame(animate);

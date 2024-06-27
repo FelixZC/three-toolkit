@@ -5,24 +5,24 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-import fragmentShaderSource from '@/shaders/getting-started/uniforms/example3.glsl'
+import fragmentShaderSource from '@/shaders/getting-started/uniforms/example3.glsl';
 var uniforms = {
-    u_resolution: {
-        value: new THREE.Vector2(window.innerWidth, window.innerHeight)
-    },
-    u_time: {
-        value: 0.0
-    },
-    u_mouse: {
-        value: new THREE.Vector2(0, 0)
-    },
+  u_resolution: {
+    value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+  },
+  u_time: {
+    value: 0.0,
+  },
+  u_mouse: {
+    value: new THREE.Vector2(0, 0),
+  },
 };
 
 // 创建自定义着色器材质
 const customMaterial = new THREE.ShaderMaterial({
-    // vertexShader:vertexShaderSource, //使用默认顶点着色器
-    fragmentShader: fragmentShaderSource,
-    uniforms: uniforms
+  // vertexShader:vertexShaderSource, //使用默认顶点着色器
+  fragmentShader: fragmentShaderSource,
+  uniforms: uniforms,
 });
 
 // 创建一个简单的几何体并应用着色器材质
@@ -38,10 +38,10 @@ var clock = new THREE.Clock();
 animate();
 // 渲染循环
 function animate() {
-    requestAnimationFrame(animate);
-    uniforms.u_time.value = clock.getElapsedTime();
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+  uniforms.u_time.value = clock.getElapsedTime();
+  cube.rotation.x += 0.01;
+  cube.rotation.y += 0.01;
+  renderer.render(scene, camera);
 }
 animate();

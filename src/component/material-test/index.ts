@@ -1,8 +1,8 @@
-import "./index.css";
+import './index.css';
 
-import Experience from "./experience";
+import Experience from './experience';
 
-document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <div id="sketch"></div>
 <div class="loader-screen">
     <div class="loading-container">
@@ -19,4 +19,4 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 </div>
 `;
 
-new Experience("#sketch");
+new Experience('#sketch');

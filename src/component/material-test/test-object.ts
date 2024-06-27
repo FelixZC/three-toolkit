@@ -1,9 +1,9 @@
-import * as kokomi from "kokomi.js";
-import * as THREE from "three";
-import Experience from "./experience";
+import * as kokomi from 'kokomi.js';
+import * as THREE from 'three';
+import Experience from './experience';
 
-import testObjectVertexShader from "@/shaders/3d-effect/vert.glsl";
-import testObjectFragmentShader from "@/shaders/3d-effect/frag.glsl";
+import testObjectVertexShader from '@/shaders/3d-effect/vert.glsl';
+import testObjectFragmentShader from '@/shaders/3d-effect/frag.glsl';
 
 /**
  * TestObject类扩展自kokomi.Component，用于创建和管理Three中的材质和网格。
@@ -42,9 +42,9 @@ export default class TestObject extends kokomi.Component {
 
     // 颜色参数用于场景背景和着色器中的颜色统一变量
     const colorParams = {
-      themeColor: "#070618",
-      lightColor: "#4cc2e9",
-      light2Color: "#9743fe",
+      themeColor: '#070618',
+      lightColor: '#4cc2e9',
+      light2Color: '#9743fe',
     };
 
     // 设置场景背景颜色
@@ -93,22 +93,37 @@ export default class TestObject extends kokomi.Component {
     // 如果调试模式激活，设置参数的GUI控制
     const debug = this.base.debug;
     if (debug.active && debug.ui) {
-      const debugFolder = debug.ui.addFolder("testObject");
-      debugFolder.add(params.uDistort, "value").min(0).max(2).step(0.01).name("distort");
-      debugFolder.add(params.uFrequency, "value").min(0).max(5).step(0.01).name("frequency");
-      debugFolder.addColor(colorParams, "themeColor").onChange((val: THREE.Color) => {
+      const debugFolder = debug.ui.addFolder('testObject');
+      debugFolder.add(params.uDistort, 'value').min(0).max(2).step(0.01).name('distort');
+      debugFolder.add(params.uFrequency, 'value').min(0).max(5).step(0.01).name('frequency');
+      debugFolder.addColor(colorParams, 'themeColor').onChange((val: THREE.Color) => {
         material.uniforms.uThemeColor.value = new THREE.Color(val);
         this.base.scene.background = new THREE.Color(val);
       });
-      debugFolder.addColor(colorParams, "lightColor").onChange((val: THREE.Color) => {
+      debugFolder.addColor(colorParams, 'lightColor').onChange((val: THREE.Color) => {
         material.uniforms.uLightColor.value = new THREE.Color(val);
       });
-      debugFolder.add(params.uFresnelIntensity, "value").min(0).max(1).step(0.01).name("fresnelIntensity");
-      debugFolder.add(params.uLightIntensity, "value").min(0).max(1).step(0.01).name("lightIntensity");
-      debugFolder.addColor(colorParams, "light2Color").onChange((val: THREE.Color) => {
+      debugFolder
+        .add(params.uFresnelIntensity, 'value')
+        .min(0)
+        .max(1)
+        .step(0.01)
+        .name('fresnelIntensity');
+      debugFolder
+        .add(params.uLightIntensity, 'value')
+        .min(0)
+        .max(1)
+        .step(0.01)
+        .name('lightIntensity');
+      debugFolder.addColor(colorParams, 'light2Color').onChange((val: THREE.Color) => {
         material.uniforms.uLight2Color.value = new THREE.Color(val);
       });
-      debugFolder.add(params.uLight2Intensity, "value").min(0).max(1).step(0.01).name("light2Intensity");
+      debugFolder
+        .add(params.uLight2Intensity, 'value')
+        .min(0)
+        .max(1)
+        .step(0.01)
+        .name('light2Intensity');
     }
   }
 

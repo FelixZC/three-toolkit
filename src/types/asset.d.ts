@@ -1,13 +1,12 @@
-declare module "*.gltf" {
+declare module '*.gltf' {
   const value: string;
   export default value;
 }
 
-declare module "*.glb" {
+declare module '*.glb' {
   const value: string;
   export default value;
 }
-
 
 // 声明图片资源的类型
 declare module '*.png' {
@@ -99,8 +98,6 @@ declare module '*.flac' {
   const src: string;
   export default src;
 }
-
-
 
 declare module '*.woff' {
   const src: string;
