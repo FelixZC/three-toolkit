@@ -3,6 +3,7 @@ import fireworkVertexShader from '@/shaders/fireworks/vertex.glsl';
 import fireworkFragmentShader from '@/shaders/fireworks/fragment.glsl';
 import gsap from 'gsap';
 import ThreeDemo from './init';
+import { FontLoader, TextGeometry, TextGeometryParameters } from 'three-stdlib';
 
 // Firework 构造函数的配置接口
 interface FireworkConfig {
@@ -14,9 +15,6 @@ interface FireworkConfig {
 
 interface FireworkParticle {
   isExploded: boolean;
-  particles: THREE.Vector3[]; // 假设每个粒子是一个Vector3对象
-  geometry: THREE.BufferGeometry;
-  material: THREE.ShaderMaterial | THREE.PointsMaterial;
   mesh: THREE.Points;
   position: THREE.Vector3;
 }
@@ -105,15 +103,6 @@ class Firework {
     // 创建一个包含粒子基本属性的对象
     const firework: FireworkParticle = {
       isExploded: false,
-      particles: [], // 初始化粒子数组
-      geometry: new THREE.BufferGeometry(),
-      material: new THREE.PointsMaterial({
-        size: 0.1,
-        vertexColors: true,
-        blending: THREE.AdditiveBlending,
-        transparent: true,
-        depthWrite: false,
-      }),
       mesh: null as unknown as THREE.Points, // 初始时mesh为null，稍后创建
       position: new THREE.Vector3(), // 初始位置将被设置
     };
@@ -135,13 +124,20 @@ class Firework {
     const g = Math.random() * 0.5 + 0.5;
     const b = Math.random();
     singleColors.set([r, g, b]);
-
+    const geometry = new THREE.BufferGeometry()
+    const material = new THREE.PointsMaterial({
+      size: 0.1,
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      depthWrite: false,
+    })
     // 使用粒子的位置和颜色创建几何体和材质
-    firework.geometry.setAttribute('position', new THREE.BufferAttribute(singlePositions, 3));
-    firework.geometry.setAttribute('color', new THREE.BufferAttribute(singleColors, 3));
+    geometry.setAttribute('position', new THREE.BufferAttribute(singlePositions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(singleColors, 3));
 
     // 创建粒子网格并设置其位置，然后将其添加到场景中
-    firework.mesh = new THREE.Points(firework.geometry, firework.material);
+    firework.mesh = new THREE.Points(geometry, material);
     firework.mesh.position.copy(firework.position);
     this.demo.scene.add(firework.mesh);
 
@@ -171,7 +167,7 @@ class Firework {
    */
   destroy(firework: FireworkParticle) {
     this.demo.scene.remove(firework.mesh); // 从场景中移除烟火的网格
-    firework.geometry.dispose(); // 释放几何体资源
+    firework.mesh.geometry.dispose(); // 释放几何体资源
   }
 
   /**
@@ -248,15 +244,13 @@ class Firework {
       blending: THREE.AdditiveBlending, // 使用加法混合增强亮度和效果
     });
 
-    firework.geometry = newGeometry; // 更新几何体
-    firework.material = newMaterial; // 更新材质
-    const newMesh = new THREE.Points(firework.geometry, firework.material);
+    const newMesh = new THREE.Points(newGeometry, newMaterial);
     newMesh.position.copy(firework.position); // 复制位置
     firework.mesh = newMesh;
     this.demo.scene.add(firework.mesh); // 添加到场景
 
     // 使用gsap库进行材质动画处理，动画完成后自动销毁烟火对象
-    gsap.to(firework.material.uniforms.uProgress, {
+    gsap.to((firework.mesh.material as THREE.ShaderMaterial).uniforms.uProgress, {
       value: 1, // 动画进度从0到1
       duration: 6, // 动画持续6秒
       ease: 'linear', // 线性缓动
@@ -281,6 +275,7 @@ export function addFireWork(demo: ThreeDemo) {
       fireworkController.launch(position); // 用户按下空格键时创建新的烟花
     }
   });
+  return fireworkController.fireworks
 }
 
 /**
@@ -301,7 +296,7 @@ export function addStars(demo: ThreeDemo, count: number) {
     transparent: true,
     blending: THREE.AdditiveBlending, // 使用加性混合让星星更亮
   });
-
+  const stars: THREE.Points<THREE.SphereGeometry, THREE.PointsMaterial, THREE.Object3DEventMap>[] = []
   // 循环创建指定数量的星星并添加到场景中
   for (let i = 0; i < count; i++) {
     const geometry = new THREE.SphereGeometry(0.01, 32, 32); // 使用小球几何体作为星星的形状
@@ -312,7 +307,55 @@ export function addStars(demo: ThreeDemo, count: number) {
       .fill(Math.E)
       .map(() => THREE.MathUtils.randFloatSpread(1000)); // 调整范围以适应你的场景大小
     star.position.set(x, y, z);
-
+    stars.push(star);
     demo.scene.add(star);
   }
+  return stars
+}
+interface customTextGeometryParameters extends Omit<TextGeometryParameters, 'font'> {
+  bevelSegments: number
+}
+
+export function addText3D(
+  demo: { scene: THREE.Scene },
+  text: string = 'hello world',
+  position: THREE.Vector3 = new THREE.Vector3(0, 10, 0),
+  textMaterialOptions: THREE.MeshPhongMaterialParameters = {
+    color: 0xffffff,
+  },
+  textGeometryOption: customTextGeometryParameters =
+    {
+      size: 1,
+      height: 0.1,
+      bevelEnabled: true, // 启用斜面以获得更平滑的边缘
+      bevelThickness: 0.05,
+      bevelSize: 0.05,
+      bevelOffset: 0,
+      bevelSegments: 5,
+    },
+  fontUrl: string = "https://unpkg.com/three@0.77.0/examples/fonts/helvetiker_regular.typeface.json"
+): Promise<THREE.Mesh> {
+  return new Promise((resolve, reject) => {
+    // 创建字体加载器
+    const fontLoader = new FontLoader();
+    fontLoader.load(fontUrl, (font) => {
+      // 创建3D文本几何体
+      const parameters: TextGeometryParameters = {
+        font: font,
+        ...textGeometryOption
+      }
+      const textGeometry = new TextGeometry(text, parameters);
+      // textGeometry.userData.text = text
+      // textGeometry.userData.parameters = parameters
+      // 创建材质并应用到文本上
+      const textMaterial = new THREE.MeshPhongMaterial(textMaterialOptions);
+      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+      demo.scene.add(textMesh);
+      position.x = position.x - (text.length / 2)
+      textMesh.position.copy(position);
+      resolve(textMesh);
+    }, undefined, (err) => {
+      reject(err);
+    });
+  });
 }
