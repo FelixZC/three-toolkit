@@ -4,7 +4,7 @@ interface CrsProperties {
 }
 
 interface Crs {
-  type: 'name';
+  type: "name";
   properties: CrsProperties;
 }
 
@@ -23,19 +23,19 @@ interface FeatureProperties {
 
 interface GeometryCoordinates {
   // 这里需要根据具体的坐标数据结构进行定义，以下是一个示例
-  type: 'MultiPolygon';
+  type: "MultiPolygon";
   coordinates: number[][][][]; // 多边形坐标数组，具体维度根据实际数据结构调整
 }
 
 interface Feature {
-  type: 'Feature';
+  type: "Feature";
   properties: FeatureProperties;
   geometry: GeometryCoordinates;
 }
 
 // 定义 FeatureCollection 接口
 interface FeatureCollection {
-  type: 'FeatureCollection';
+  type: "FeatureCollection";
   crs: Crs;
   features: Feature[];
 }

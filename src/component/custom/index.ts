@@ -1,5 +1,5 @@
-import * as THREE from 'three';
-import * as kokomi from 'kokomi.js';
+import * as THREE from "three";
+import * as kokomi from "kokomi.js";
 
 class Sketch extends kokomi.Base {
   addGeometry(geometry: THREE.BufferGeometry, position: THREE.Vector3) {
@@ -43,7 +43,7 @@ class Sketch extends kokomi.Base {
     ]);
 
     // 创建BufferGeometry并设置顶点位置属性
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
 
     // 定义面，构成一个底部正方形和四个等腰三角形侧面
     const indices = new Uint32Array([
@@ -76,18 +76,51 @@ class Sketch extends kokomi.Base {
     this.addGeometry(geometry, new THREE.Vector3(-4, 4, -4));
     /************************************************************************************************************* */
     // 添加一个立方体到场景中
-    this.addGeometry(new THREE.BoxGeometry(1, 1, 1), new THREE.Vector3(-4, 0, -4));
+    this.addGeometry(
+      new THREE.BoxGeometry(1, 1, 1),
+      new THREE.Vector3(-4, 0, -4),
+    );
     // 创建并添加不同的几何体到场景中
-    this.addGeometry(new THREE.PlaneGeometry(4, 4), new THREE.Vector3(0, -4, 0)); // 平面
-    this.addGeometry(new THREE.SphereGeometry(1, 32, 32), new THREE.Vector3(-4, 0, 0)); // 球体
-    this.addGeometry(new THREE.CylinderGeometry(1, 1, 3, 32), new THREE.Vector3(0, 4, 0)); // 圆柱体
-    this.addGeometry(new THREE.TetrahedronGeometry(1, 0), new THREE.Vector3(0, 0, -4)); // 四面体
-    this.addGeometry(new THREE.OctahedronGeometry(1, 0), new THREE.Vector3(0, 0, 4)); // 八面体
-    this.addGeometry(new THREE.DodecahedronGeometry(1, 0), new THREE.Vector3(0, 0, 0)); // 十二面体
-    this.addGeometry(new THREE.IcosahedronGeometry(1, 0), new THREE.Vector3(4, 4, 0)); // 二十面体
-    this.addGeometry(new THREE.TorusGeometry(1, 0.3, 16, 32), new THREE.Vector3(-4, -4, 0)); // 圆环面
-    this.addGeometry(new THREE.TorusKnotGeometry(1, 0.2, 32, 8), new THREE.Vector3(4, -4, 0)); // 圆环面结
-    this.addGeometry(new THREE.ConeGeometry(1, 2, 32), new THREE.Vector3(4, 0, -4)); // 圆锥体
+    this.addGeometry(
+      new THREE.PlaneGeometry(4, 4),
+      new THREE.Vector3(0, -4, 0),
+    ); // 平面
+    this.addGeometry(
+      new THREE.SphereGeometry(1, 32, 32),
+      new THREE.Vector3(-4, 0, 0),
+    ); // 球体
+    this.addGeometry(
+      new THREE.CylinderGeometry(1, 1, 3, 32),
+      new THREE.Vector3(0, 4, 0),
+    ); // 圆柱体
+    this.addGeometry(
+      new THREE.TetrahedronGeometry(1, 0),
+      new THREE.Vector3(0, 0, -4),
+    ); // 四面体
+    this.addGeometry(
+      new THREE.OctahedronGeometry(1, 0),
+      new THREE.Vector3(0, 0, 4),
+    ); // 八面体
+    this.addGeometry(
+      new THREE.DodecahedronGeometry(1, 0),
+      new THREE.Vector3(0, 0, 0),
+    ); // 十二面体
+    this.addGeometry(
+      new THREE.IcosahedronGeometry(1, 0),
+      new THREE.Vector3(4, 4, 0),
+    ); // 二十面体
+    this.addGeometry(
+      new THREE.TorusGeometry(1, 0.3, 16, 32),
+      new THREE.Vector3(-4, -4, 0),
+    ); // 圆环面
+    this.addGeometry(
+      new THREE.TorusKnotGeometry(1, 0.2, 32, 8),
+      new THREE.Vector3(4, -4, 0),
+    ); // 圆环面结
+    this.addGeometry(
+      new THREE.ConeGeometry(1, 2, 32),
+      new THREE.Vector3(4, 0, -4),
+    ); // 圆锥体
     // 创建一个圆环几何体
     const ringGeometry = new THREE.RingGeometry(0.5, 1, 32);
     this.addGeometry(ringGeometry, new THREE.Vector3(-4, 4, 4)); // 圆环
@@ -109,7 +142,7 @@ class Sketch extends kokomi.Base {
     /************************************************************************************************************* */
     this.update(() => {
       // 旋转所有几何体作为示例
-      this.scene.children.forEach(object => {
+      this.scene.children.forEach((object) => {
         if (object instanceof THREE.Mesh) {
           // object.rotation.x += 0.01;
           object.rotation.y += 0.01;
@@ -119,5 +152,5 @@ class Sketch extends kokomi.Base {
   }
 }
 
-const sketch = new Sketch('#sketch');
+const sketch = new Sketch("#sketch");
 sketch.create();

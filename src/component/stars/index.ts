@@ -1,12 +1,12 @@
-import * as THREE from 'three';
-import * as kokomi from 'kokomi.js';
-import vertexShader from '@/shaders/stars/vertexShader.glsl';
-import fragmentShader from '@/shaders/stars/fragmentShader.glsl';
+import fragmentShader from "@/shaders/stars/fragmentShader.glsl";
 
 /**
  * Sketch类继承自kokomi.Base，用于创建和管理一个Three的场景。
  * 该类主要功能是初始化相机、设置几何体和材质，以及管理场景中的物体。
  */
+import * as kokomi from "kokomi.js";
+import * as THREE from "three";
+import vertexShader from "@/shaders/stars/vertexShader.glsl";
 class Sketch extends kokomi.Base {
   create() {
     // 初始化相机位置
@@ -20,19 +20,24 @@ class Sketch extends kokomi.Base {
       {
         length: count,
       },
-      () => [2, 2, 2].map(THREE.MathUtils.randFloatSpread)
+      () => [2, 2, 2].map(THREE.MathUtils.randFloatSpread),
     );
     let positionsFlat = positions.flat();
     let positionsFloat32Array: Float32Array = Float32Array.from(positionsFlat);
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute('position', new THREE.BufferAttribute(positionsFloat32Array, 3));
+    geometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(positionsFloat32Array, 3),
+    );
 
     // 设置点的材质，使用自定义的顶点和片段着色器
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
-      transparent: true, // 材质设置为透明
-      blending: THREE.AdditiveBlending, // 使用加法混合
+      transparent: true,
+      // 材质设置为透明
+      blending: THREE.AdditiveBlending,
+      // 使用加法混合
       depthWrite: false, // 不写入深度缓冲区
     });
 
@@ -58,5 +63,5 @@ class Sketch extends kokomi.Base {
 }
 
 // 创建Sketch实例并初始化
-const sketch = new Sketch('#sketch');
+const sketch = new Sketch("#sketch");
 sketch.create();

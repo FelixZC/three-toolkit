@@ -1,12 +1,17 @@
-import * as THREE from 'three';
+import fragmentShaderSource from "@/shaders/getting-started/uniforms/example3.glsl";
+import * as THREE from "three";
 // 初始化场景、相机、渲染器
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000,
+);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-import fragmentShaderSource from '@/shaders/getting-started/uniforms/example3.glsl';
-var uniforms = {
+const uniforms = {
   u_resolution: {
     value: new THREE.Vector2(window.innerWidth, window.innerHeight),
   },
@@ -32,9 +37,7 @@ scene.add(cube);
 
 // 设置相机位置
 camera.position.z = 5;
-
-var clock = new THREE.Clock();
-
+const clock = new THREE.Clock();
 animate();
 // 渲染循环
 function animate() {

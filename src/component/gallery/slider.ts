@@ -1,8 +1,8 @@
-import * as kokomi from 'kokomi.js';
-import sliderVertexShader from '@/shaders/slider/vert.glsl';
-import sliderFragmentShader from '@/shaders/slider/frag.glsl';
-import Experience from './experience';
-import * as THREE from 'three';
+import Experience from "./experience";
+import * as kokomi from "kokomi.js";
+import sliderFragmentShader from "@/shaders/slider/frag.glsl";
+import sliderVertexShader from "@/shaders/slider/vert.glsl";
+import * as THREE from "three";
 /**
  * Slider类继承于kokomi.Component，用于创建一个滑动相册效果。
  * @param {HTMLElement} base - 组件的基元素。
@@ -10,7 +10,11 @@ import * as THREE from 'three';
 export default class Slider extends kokomi.Component {
   base: Experience;
   ig: kokomi.InfiniteGallery;
-  params: { [key: string]: { value: number } };
+  params: {
+    [key: string]: {
+      value: number;
+    };
+  };
   am: kokomi.AssetManager;
   ws: kokomi.WheelScroller;
   dd: kokomi.DragDetecter;
@@ -30,14 +34,19 @@ export default class Slider extends kokomi.Component {
 
     // 创建无限画廊实例
     const elements = document.querySelectorAll(
-      '.gallery-item'
-    ) as unknown as kokomi.InfiniteGallery['elList'];
+      ".gallery-item",
+    ) as unknown as kokomi.InfiniteGallery["elList"];
     this.ig = new kokomi.InfiniteGallery(this.base, {
-      elList: [...elements], // 目标元素列表
-      direction: 'horizontal', // 滑动方向
-      gap: 128, // 元素之间的间距
-      vertexShader: sliderVertexShader, //顶点着色器
-      fragmentShader: sliderFragmentShader, // 片元着色器
+      elList: [...elements],
+      // 目标元素列表
+      direction: "horizontal",
+      // 滑动方向
+      gap: 128,
+      // 元素之间的间距
+      vertexShader: sliderVertexShader,
+      //顶点着色器
+      fragmentShader: sliderFragmentShader,
+      // 片元着色器
       uniforms: {
         uVelocity: {
           value: 0,
@@ -49,7 +58,8 @@ export default class Slider extends kokomi.Component {
           value: 0,
         },
         ...params,
-      }, // 着色器中使用的统一变量
+      },
+      // 着色器中使用的统一变量
       materialParams: {
         transparent: true, // 材质设置为透明
       },
@@ -58,18 +68,27 @@ export default class Slider extends kokomi.Component {
     // 如果处于调试模式，设置调试界面
     const debug = this.base.debug;
     if (debug.active && debug.ui) {
-      const debugFolder = debug.ui.addFolder('gallery');
-      debugFolder.add(params.uDistortX, 'value').min(0).max(2).step(0.01).name('distortX');
-      debugFolder.add(params.uDistortZ, 'value').min(0).max(2).step(0.01).name('distortZ');
+      const debugFolder = debug.ui.addFolder("gallery");
+      debugFolder
+        .add(params.uDistortX, "value")
+        .min(0)
+        .max(2)
+        .step(0.01)
+        .name("distortX");
+      debugFolder
+        .add(params.uDistortZ, "value")
+        .min(0)
+        .max(2)
+        .step(0.01)
+        .name("distortZ");
     }
 
     // 初始化鼠标滚轮和拖拽检测
     this.ws = new kokomi.WheelScroller();
     this.ws.listenForScroll();
-
     this.dd = new kokomi.DragDetecter(this.base);
     this.dd.detectDrag();
-    this.dd.on('drag', (delta: { x: number; y: number }) => {
+    this.dd.on("drag", (delta: { x: number; y: number }) => {
       this.ws.scroll.target -= delta[this.ig.dimensionType] * 2;
     });
   }
@@ -92,8 +111,9 @@ export default class Slider extends kokomi.Component {
     this.ig.sync(current);
 
     // 遍历每个相册元素，更新其着色器参数
-    this.ig.iterate(maku => {
-      (maku.mesh.material as THREE.ShaderMaterial).uniforms.uVelocity.value = delta;
+    this.ig.iterate((maku) => {
+      (maku.mesh.material as THREE.ShaderMaterial).uniforms.uVelocity.value =
+        delta;
       (maku.mesh.material as THREE.ShaderMaterial).uniforms.uDistortX.value =
         this.params.uDistortX.value;
       (maku.mesh.material as THREE.ShaderMaterial).uniforms.uDistortZ.value =

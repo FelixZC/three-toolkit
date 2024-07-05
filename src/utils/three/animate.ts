@@ -1,5 +1,4 @@
-import * as THREE from 'three';
-
+import * as THREE from "three";
 export interface Demo {
   renderer: THREE.Renderer;
   scene: THREE.Scene;
@@ -9,41 +8,37 @@ export interface Demo {
 /**
  * 设置鼠标拖动旋转立方体的事件监听器
  */
-export function setupMouseControls(object3D: THREE.Object3D, sensitivity: number = 0.005) {
+export function setupMouseControls(
+  object3D: THREE.Object3D,
+  sensitivity: number = 0.005,
+) {
   let isDragging = false;
   let lastMouseX = 0;
   let lastMouseY = 0;
-
   const onDocumentMouseDown = (event: MouseEvent) => {
     event.preventDefault();
     isDragging = true;
     lastMouseX = event.clientX;
     lastMouseY = event.clientY;
   };
-
   const onDocumentMouseMove = (event: MouseEvent) => {
     if (isDragging) {
       const mouseX = event.clientX;
       const mouseY = event.clientY;
-
       const deltaX = (mouseX - lastMouseX) * sensitivity;
       const deltaY = (mouseY - lastMouseY) * sensitivity;
-
       object3D.rotation.x += deltaY;
       object3D.rotation.y += deltaX;
-
       lastMouseX = mouseX;
       lastMouseY = mouseY;
     }
   };
-
   const onDocumentMouseUp = (event: MouseEvent) => {
     isDragging = false;
   };
-
-  document.addEventListener('mousedown', onDocumentMouseDown);
-  document.addEventListener('mousemove', onDocumentMouseMove);
-  document.addEventListener('mouseup', onDocumentMouseUp);
+  document.addEventListener("mousedown", onDocumentMouseDown);
+  document.addEventListener("mousemove", onDocumentMouseMove);
+  document.addEventListener("mouseup", onDocumentMouseUp);
 }
 
 /**
@@ -51,40 +46,35 @@ export function setupMouseControls(object3D: THREE.Object3D, sensitivity: number
  */
 export function setupAutoRotate(
   object3D: THREE.Object3D,
-  axis: 'X' | 'Y' | 'Z' = 'Y',
-  speed: number = 0.001
+  axis: "X" | "Y" | "Z" = "Y",
+  speed: number = 0.001,
 ) {
   let lastTime = 0;
 
   // 定义旋转轴向量
   let rotationAxis;
   switch (axis.toUpperCase()) {
-    case 'X':
+    case "X":
       rotationAxis = new THREE.Vector3(1, 0, 0);
       break;
-    case 'Y':
+    case "Y":
       rotationAxis = new THREE.Vector3(0, 1, 0);
       break;
-    case 'Z':
+    case "Z":
       rotationAxis = new THREE.Vector3(0, 0, 1);
       break;
     default:
-      console.warn('Invalid axis specified. Defaulting to Y-axis.');
       rotationAxis = new THREE.Vector3(0, 1, 0);
   }
-
   const quaternion = new THREE.Quaternion();
-
-  const onAnimationFrame: FrameRequestCallback = time => {
+  const onAnimationFrame: FrameRequestCallback = (time) => {
     const deltaTime = time - lastTime;
     // 使用四元数旋转，以避免万向节锁问题
     quaternion.setFromAxisAngle(rotationAxis, speed * deltaTime);
     object3D.quaternion.multiply(quaternion);
-
     lastTime = time;
     requestAnimationFrame(onAnimationFrame);
   };
-
   requestAnimationFrame(onAnimationFrame);
 }
 
@@ -94,13 +84,15 @@ export function setupAutoRotate(
  * @param {THREE.Object3D} model 要飞行的3D模型。
  * @param {THREE.Object3D} [modelBody] 物理引擎中的模型体（可选）。
  */
-export function setupModelFlying(demo: Demo, model: THREE.Object3D, modelBody?: THREE.Object3D) {
+export function setupModelFlying(
+  demo: Demo,
+  model: THREE.Object3D,
+  modelBody?: THREE.Object3D,
+) {
   // 参数有效性验证
   if (!demo || !demo.renderer || !demo.scene || !demo.camera || !model) {
-    console.error('Invalid parameters passed to setupModelFlying.');
     return;
   }
-
   const { renderer, scene, camera } = demo;
 
   // 模型的初始位置
@@ -112,7 +104,7 @@ export function setupModelFlying(demo: Demo, model: THREE.Object3D, modelBody?: 
    * 动画循环函数
    * @param {number} time 当前时间戳（毫秒）
    */
-  const animate: FrameRequestCallback = time => {
+  const animate: FrameRequestCallback = (time) => {
     requestAnimationFrame(animate);
     const rotationSpeed = Math.PI / 2; // 每秒旋转的弧度数
     const radius = 5; // 旋转半径

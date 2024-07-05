@@ -1,19 +1,18 @@
-import * as THREE from 'three';
-import { setupAutoRotate } from '@/utils/three/animate';
-import ThreeDemo from '@/utils/three/init';
+import { addFireWork, addStars, addText3D } from "@/utils/three/effect";
 import {
+  addPhysicsForFont,
+  addPhysicsForModel,
+  createCube,
   createDefaultPhysicsWorld,
   createGround,
-  createCube,
   createSphere,
-  addPhysicsForModel,
-  addPhysicsForFont
-} from '@/utils/three/physics';
-import { addFireWork, addStars, addText3D } from '@/utils/three/effect';
-import { getRandomColor } from '@/utils/common';
-
-import { loadTexturesFromAtlas, useGltfLoader } from '@/utils/three/loader';
-import type { World, Body, Vec3 } from 'cannon-es';
+} from "@/utils/three/physics";
+import { getRandomColor } from "@/utils/common";
+import { loadTexturesFromAtlas, useGltfLoader } from "@/utils/three/loader";
+import { setupAutoRotate } from "@/utils/three/animate";
+import * as THREE from "three";
+import ThreeDemo from "@/utils/three/init";
+import type { Body, Vec3, World } from "cannon-es";
 /**
  * 创建一个简单的物理模拟场景
  * @param {Object} demo - 包含场景、相机和渲染器的对象
@@ -26,23 +25,36 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
   world.addBody(groundBody);
   scene.add(groundMesh);
   /********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************** */
-  const fontList: string[] = ['Press', 'the', 'space', 'key', 'to', 'launch', 'Spark'];
+  const fontList: string[] = [
+    "Press",
+    "the",
+    "space",
+    "key",
+    "to",
+    "launch",
+    "Spark",
+  ];
   for (let i = 0; i < fontList.length; i++) {
-    const textMesh = await addText3D(demo, fontList[i], new THREE.Vector3(3 - i, 10 + i, i * 3 - 6))
-    const { meshBody: textMeshBody } = addPhysicsForFont(textMesh)
-    world.addBody(textMeshBody)
+    const textMesh = await addText3D(
+      demo,
+      fontList[i],
+      new THREE.Vector3(3 - i, 10 + i, i * 3 - 6),
+    );
+    const { meshBody: textMeshBody } = addPhysicsForFont(textMesh);
+    world.addBody(textMeshBody);
   }
   /********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************** */
   //添加立方体
   const { cubeBody, cubeMesh } = createCube();
-
   world.addBody(cubeBody);
   scene.add(cubeMesh);
   /********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************** */
   // 添加球体
   const { sphereMesh, sphereBody } = createSphere({
-    radius: 0.5, // 半径增大
-    position: new THREE.Vector3(0, 5, 5), // 改变初始位置
+    radius: 0.5,
+    // 半径增大
+    position: new THREE.Vector3(0, 5, 5),
+    // 改变初始位置
     color: 0x0000ff, // 改变颜色为红色
   });
   world.addBody(sphereBody);
@@ -51,9 +63,9 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
   //添加飞机
   const loadGltfModelFunc = useGltfLoader();
   const planeModel = await loadGltfModelFunc(
-    '/src/assets/model/gltf/plane.gltf',
+    "/src/assets/model/gltf/plane.gltf",
     new THREE.Vector3(-5, 10, -5),
-    new THREE.Vector3(0.25, 0.25, 0.25)
+    new THREE.Vector3(0.25, 0.25, 0.25),
   );
   const { gltfBody: planeGltfBody } = addPhysicsForModel(planeModel, {}, 1);
   demo.scene.add(planeModel);
@@ -61,9 +73,9 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
   // setupModelFlying(demo, planeModel, planeGltfBody)
   //添加房子
   const houseModel = await loadGltfModelFunc(
-    '/src/assets/model/gltf/littlest-tokyo.glb',
+    "/src/assets/model/gltf/littlest-tokyo.glb",
     new THREE.Vector3(0, 2.2, 0),
-    new THREE.Vector3(0.01, 0.01, 0.01)
+    new THREE.Vector3(0.01, 0.01, 0.01),
   );
   const { gltfBody: houseGltfBody } = addPhysicsForModel(houseModel);
   demo.scene.add(houseModel);
@@ -75,13 +87,16 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
     position: new THREE.Vector3(0, 8, 0),
     mass: 0,
   });
-  const textures = await loadTexturesFromAtlas('/src/assets/images/textures/', 6);
+  const textures = await loadTexturesFromAtlas(
+    "/src/assets/images/textures/",
+    6,
+  );
   // 创建一个材质数组，每个材质对应一个从纹理图集加载的贴图
   floatCubeMesh.material = textures.map(
-    texture =>
+    (texture) =>
       new THREE.MeshBasicMaterial({
         map: texture,
-      })
+      }),
   );
   setupAutoRotate(floatCubeMesh);
   demo.scene.add(floatCubeMesh);
@@ -95,7 +110,7 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
    *
    * @param {MouseEvent} event 鼠标事件对象，包含了鼠标按下的详细信息。
    */
-  renderer.domElement.addEventListener('mousedown', event => {
+  renderer.domElement.addEventListener("mousedown", (event) => {
     // 当鼠标左键按下时
     if (event.button === 0) {
       const { sphereBody: ballBody, sphereMesh: ballMesh } = createSphere({
@@ -109,9 +124,9 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
       raycaster.setFromCamera(
         new THREE.Vector2(
           (event.clientX / window.innerWidth) * 2 - 1,
-          -(event.clientY / window.innerHeight) * 2 + 1
+          -(event.clientY / window.innerHeight) * 2 + 1,
         ),
-        camera
+        camera,
       );
       // 检测鼠标点击是否与地面相交
       const intersections = raycaster.intersectObject(groundMesh);
@@ -119,7 +134,7 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
         // 如果相交，将球体位置设置为相交点位置
         ballBody.position.copy(intersections[0].point as unknown as Vec3);
       } else {
-        console.log('No intersection with the ground.'); // 如果没有相交，打印错误信息并返回
+        // 如果没有相交，打印错误信息并返回
         return;
       }
       // 将物理球体添加到物理世界
@@ -139,9 +154,11 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
     // 更新物理世界的状态
     world.step(1 / 60); // 步进物理模拟，参数为时间步长
     // 遍历球体集合，更新每个球体网格的位置和旋转，以匹配其对应的物理体状态
-    ballBodies.forEach(body => {
+    ballBodies.forEach((body) => {
       // 查找场景中与当前物理体对应的网格
-      const mesh = scene.children.find(child => child.userData.cannonBody === body);
+      const mesh = scene.children.find(
+        (child) => child.userData.cannonBody === body,
+      );
       if (mesh) {
         // 如果找到，更新网格的位置和旋转
         mesh.position.copy(body.position);
@@ -149,7 +166,6 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
       }
     });
   }
-
   animate();
 }
 

@@ -56,11 +56,12 @@ export function hsvToRgb(h: number, s: number, v: number) {
   v /= 100; // 明度转换到[0,1]
 
   // 计算RGB值
-  let i = Math.floor(h),
-    f = h - i,
-    p = v * (1 - s),
-    q = v * (1 - s * f),
-    t = v * (1 - s * (1 - f));
+  let i = Math.floor(h);
+
+  let f = h - i;
+  let p = v * (1 - s);
+  let q = v * (1 - s * f);
+  let t = v * (1 - s * (1 - f));
 
   // 根据色调值i和剩余部分f，计算RGB颜色
   switch (i % 6) {

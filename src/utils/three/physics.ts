@@ -1,5 +1,5 @@
-import * as CANNON from 'cannon-es';
-import * as THREE from 'three';
+import * as CANNON from "cannon-es";
+import * as THREE from "three";
 // 定义 Cannon 物理材质的接口
 interface CannonMaterialOptions {
   // 这里可以添加物理材质的属性，例如摩擦力等
@@ -16,11 +16,13 @@ export function createDefaultPhysicsWorld(): CANNON.World {
   cannonWorld.gravity.set(0, -9.82, 0);
   cannonWorld.broadphase = new CANNON.NaiveBroadphase();
   cannonWorld.allowSleep = true;
-
   return cannonWorld;
 }
-
-export function addPhysicsForMesh(mesh: THREE.Mesh | THREE.Group<THREE.Object3DEventMap>, materialOptions?: CannonMaterialOptions, mass: number = 1) {
+export function addPhysicsForMesh(
+  mesh: THREE.Mesh | THREE.Group<THREE.Object3DEventMap>,
+  materialOptions?: CannonMaterialOptions,
+  mass: number = 1,
+) {
   const meshBodyMaterial = new CANNON.Material(materialOptions);
   const meshBody = new CANNON.Body({
     mass: mass,
@@ -31,8 +33,8 @@ export function addPhysicsForMesh(mesh: THREE.Mesh | THREE.Group<THREE.Object3DE
   meshBody.updateMassProperties();
 
   /**
- * 动画函数，用于每帧更新立方体的网格位置和旋转，以匹配物理体的状态。
- */
+   * 动画函数，用于每帧更新立方体的网格位置和旋转，以匹配物理体的状态。
+   */
   function animate() {
     requestAnimationFrame(() => {
       mesh.position.copy(meshBody.position); // 更新位置
@@ -43,7 +45,6 @@ export function addPhysicsForMesh(mesh: THREE.Mesh | THREE.Group<THREE.Object3DE
   if (mass != 0) {
     animate(); // 如果质量不为0，则开始动画
   }
-
   return {
     meshBody,
     meshBodyMaterial,
@@ -96,10 +97,10 @@ export function createGround({
   const groundMesh = new THREE.Mesh(groundGeo, groundMaterial);
   groundMesh.receiveShadow = true;
   groundMesh.position.set(0, 0, 0);
-  const { meshBody: groundBody, meshBodyMaterial: groundPhysMat } = addPhysicsForMesh(groundMesh, physicsMaterialOptions, 0)
+  const { meshBody: groundBody, meshBodyMaterial: groundPhysMat } =
+    addPhysicsForMesh(groundMesh, physicsMaterialOptions, 0);
   const shape = new CANNON.Box(new CANNON.Vec3(size / 2, depth / 2, size / 2));
   groundBody.addShape(shape);
-
   return {
     groundMesh,
     groundBody,
@@ -154,7 +155,8 @@ export function createCube({
   const cubeMesh = new THREE.Mesh(cubeGeo, cubeMaterial);
   cubeMesh.castShadow = true; // 立方体投射阴影
   cubeMesh.position.copy(position); // 初始位置设置
-  const { meshBody: cubeBody, meshBodyMaterial: cubePhysMat } = addPhysicsForMesh(cubeMesh, physicsMaterialOptions, mass)
+  const { meshBody: cubeBody, meshBodyMaterial: cubePhysMat } =
+    addPhysicsForMesh(cubeMesh, physicsMaterialOptions, mass);
   const shape = new CANNON.Box(new CANNON.Vec3(size / 2, size / 2, size / 2));
   cubeBody.addShape(shape);
   return {
@@ -195,7 +197,7 @@ export function createSphere({
   position = new THREE.Vector3(),
   velocity = new THREE.Vector3(),
   angularVelocity = new THREE.Vector3(),
-  color = '0x00ff00',
+  color = "0x00ff00",
   mass = 1,
   meshMaterialOptions = {},
   physicsMaterialOptions,
@@ -212,13 +214,13 @@ export function createSphere({
     color,
     ...meshMaterialOptions,
   });
-
   const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
   sphereMesh.castShadow = true; // 球体投射阴影
   sphereMesh.position.copy(position); // 初始位置设置
 
-  const { meshBody: sphereBody, meshBodyMaterial: spherePhysMat } = addPhysicsForMesh(sphereMesh, physicsMaterialOptions, mass)
-  const shape = new CANNON.Sphere(radius)
+  const { meshBody: sphereBody, meshBodyMaterial: spherePhysMat } =
+    addPhysicsForMesh(sphereMesh, physicsMaterialOptions, mass);
+  const shape = new CANNON.Sphere(radius);
   sphereBody.addShape(shape);
   sphereBody.velocity.copy(velocity as unknown as CANNON.Vec3);
   sphereBody.angularVelocity.copy(angularVelocity as unknown as CANNON.Vec3);
@@ -268,19 +270,16 @@ export function configureContactMaterials(
   world: CANNON.World,
   materialA: CANNON.Material,
   materialB: CANNON.Material,
-  options: ConfigureContactMaterialsOptions = {}
+  options: ConfigureContactMaterialsOptions = {},
 ): void {
   const { friction = 0.3, restitution = 0.3 } = options;
-
   const contactMaterial = new CANNON.ContactMaterial(materialA, materialB, {
     friction,
     restitution,
     ...options,
   });
-
   world.addContactMaterial(contactMaterial);
 }
-
 
 /**
  * 为给定的模型创建物理属性和物理体，使其能够在物理模拟中运行。
@@ -292,7 +291,7 @@ export function configureContactMaterials(
 export function addPhysicsForModel(
   model: THREE.Group<THREE.Object3DEventMap>,
   materialOptions?: CannonMaterialOptions,
-  mass: number = 1
+  mass: number = 1,
 ): {
   model: THREE.Group<THREE.Object3DEventMap>;
   gltfBody: CANNON.Body;
@@ -302,23 +301,20 @@ export function addPhysicsForModel(
   const box = new THREE.Box3().setFromObject(model);
   const size = box.getSize(new THREE.Vector3());
   const halfExtents = new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2);
-  const { meshBody: gltfBody, meshBodyMaterial: gltfBodyMaterial } = addPhysicsForMesh(model, materialOptions, mass)
+  const { meshBody: gltfBody, meshBodyMaterial: gltfBodyMaterial } =
+    addPhysicsForMesh(model, materialOptions, mass);
   gltfBody.addShape(new CANNON.Box(halfExtents));
-  gltfBody.addEventListener('collide', () => {
-    console.log('Collision occurred!');
-  });
-
+  gltfBody.addEventListener("collide", () => {});
   return {
     model,
     gltfBody,
     gltfBodyMaterial,
   };
 }
-
 export function addPhysicsForFont(
   mesh: THREE.Mesh,
   materialOptions?: CannonMaterialOptions,
-  mass: number = 1
+  mass: number = 1,
 ): {
   mesh: THREE.Mesh;
   meshBody: CANNON.Body;
@@ -328,9 +324,12 @@ export function addPhysicsForFont(
   const box = new THREE.Box3().setFromObject(mesh);
   const size = box.getSize(new THREE.Vector3());
   const fullExtents = new CANNON.Vec3(size.x, size.y, size.z);
-  const { meshBody, meshBodyMaterial: meshBodyMaterial } = addPhysicsForMesh(mesh, materialOptions, mass)
+  const { meshBody, meshBodyMaterial: meshBodyMaterial } = addPhysicsForMesh(
+    mesh,
+    materialOptions,
+    mass,
+  );
   meshBody.addShape(new CANNON.Box(fullExtents));
-
   return {
     mesh,
     meshBody,

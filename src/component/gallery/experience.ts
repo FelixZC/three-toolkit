@@ -1,23 +1,18 @@
+import Debug from "../../debug";
 /**
  * Experience类扩展自kokomi.Base，用于初始化和管理整个体验的核心组件。
  * @param {string} sel 选择器，用于指定DOM元素， 默认为"#sketch"。
  */
-import * as kokomi from 'kokomi.js';
-
-import World from './world';
-
-import Debug from '../../debug';
-
-import resources from './resources';
-
-import Postprocessing from './postprocessing';
-
+import * as kokomi from "kokomi.js";
+import Postprocessing from "./postprocessing";
+import resources from "./resources";
+import World from "./world";
 export default class Experience extends kokomi.Base {
   world: World;
   debug: Debug;
   am: kokomi.AssetManager;
   postprocessing: Postprocessing;
-  constructor(sel = '#sketch') {
+  constructor(sel = "#sketch") {
     super(sel);
 
     // 将当前实例赋值给全局变量，以便于在其他地方访问。

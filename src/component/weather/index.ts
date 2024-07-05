@@ -1,10 +1,10 @@
-import * as THREE from 'three';
-import * as kokomi from 'kokomi.js';
-import fragmentShader from '@/shaders/weather/medium-rain.glsl';
+import fragmentShader from "@/shaders/weather/medium-rain.glsl";
 // 创建一个加载器
+import * as kokomi from "kokomi.js";
+import * as THREE from "three";
 const loader = new THREE.TextureLoader();
 // 加载纹理
-const texture3 = loader.load('../shaders/weather/medium-rain3.png');
+const texture3 = loader.load("../shaders/weather/medium-rain3.png");
 class Sketch extends kokomi.Base {
   create() {
     this.camera.position.set(0, 0, 5);
@@ -21,7 +21,6 @@ class Sketch extends kokomi.Base {
     });
     const mesh = new THREE.Mesh(geometry, material);
     this.scene.add(mesh);
-
     const uj = new kokomi.UniformInjector(this);
     material.uniforms = {
       ...material.uniforms,
@@ -32,6 +31,5 @@ class Sketch extends kokomi.Base {
     });
   }
 }
-
-const sketch = new Sketch('#sketch');
+const sketch = new Sketch("#sketch");
 sketch.create();

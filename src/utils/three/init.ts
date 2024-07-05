@@ -1,9 +1,9 @@
-import * as THREE from 'three';
-import GUI from 'lil-gui';
-import Stats from 'stats.js';
-import { Sky, RoomEnvironment, OrbitControls } from 'three-stdlib';
+import GUI from "lil-gui";
+import { OrbitControls, RoomEnvironment, Sky } from "three-stdlib";
 
 // 定义 ThreeDemo 构造函数的配置接口
+import Stats from "stats.js";
+import * as THREE from "three";
 interface ThreeDemoConfig {
   isSetUpStats?: boolean;
   isSetUpControls?: boolean;
@@ -34,11 +34,11 @@ export default class ThreeDemo {
   config: ThreeDemoConfig;
   directionalLight: THREE.DirectionalLight;
   constructor(config: ThreeDemoConfig, containerId?: string);
-  constructor(config: ThreeDemoConfig = {}, containerId: string = 'container') {
+  constructor(config: ThreeDemoConfig = {}, containerId: string = "container") {
     // 获取HTML容器元素，基于窗口大小初始化画布尺寸和宽高比。
     this.container = document.getElementById(containerId);
     if (!this.container) {
-      throw new Error('Container element not found.');
+      throw new Error("Container element not found.");
     }
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -46,19 +46,26 @@ export default class ThreeDemo {
     this.devicePixelRatio = window.devicePixelRatio;
     this.resolution = new THREE.Vector2(
       this.width * this.devicePixelRatio,
-      this.height * this.devicePixelRatio
+      this.height * this.devicePixelRatio,
     );
     // 初始化Three场景、相机和渲染器相关的属性。
     // 配置对象，用于控制各种设置的开启或关闭。
     this.config = {
-      isSetUpStats: true, // 是否设置统计信息显示
-      isSetUpControls: true, // 是否设置相机控制
-      isAddAxesHelper: true, // 是否添加坐标轴辅助线
-      isAddGridHelper: true, // 是否添加网格辅助线
-      isAddCameraHelper: true, // 是否添加相机辅助线
-      isSetUpGUI: true, // 是否设置图形用户界面
+      isSetUpStats: true,
+      // 是否设置统计信息显示
+      isSetUpControls: true,
+      // 是否设置相机控制
+      isAddAxesHelper: true,
+      // 是否添加坐标轴辅助线
+      isAddGridHelper: true,
+      // 是否添加网格辅助线
+      isAddCameraHelper: true,
+      // 是否添加相机辅助线
+      isSetUpGUI: true,
+      // 是否设置图形用户界面
       isSetSky: true,
-      isSetUpEnvironment: false, // 是否设置环境光,
+      isSetUpEnvironment: false,
+      // 是否设置环境光,
       ...config,
     };
     this.init();
@@ -72,35 +79,43 @@ export default class ThreeDemo {
     this.gui = gui;
     // 创建光照颜色控制器
     const lightColorController = gui
-      .addColor(this.directionalLight, 'color')
-      .name('Directional Light Color');
+      .addColor(this.directionalLight, "color")
+      .name("Directional Light Color");
     lightColorController.onChange((value: THREE.Color) => {
       this.directionalLight.color.set(value);
     });
 
     // 创建光照强度控制器
     const lightIntensityController = gui
-      .add(this.directionalLight, 'intensity', 0, 5)
+      .add(this.directionalLight, "intensity", 0, 5)
       .step(0.1)
-      .name('Directional Light Intensity');
+      .name("Directional Light Intensity");
     lightIntensityController.onChange((value: number) => {
       this.directionalLight.intensity = value;
     });
 
     // 创建雾效颜色控制器
-    const fogColorController = gui.addColor(this.scene.fog!, 'color').name('Fog Color');
+    const fogColorController = gui
+      .addColor(this.scene.fog!, "color")
+      .name("Fog Color");
     fogColorController.onChange((value: THREE.Color) => {
       this.scene.fog!.color.set(value);
     });
 
     // 创建雾效范围控制器
-    const fogRangeController = gui.add(this.scene.fog!, 'near', 0, 0.5).step(0.1).name('Fog Near');
+    const fogRangeController = gui
+      .add(this.scene.fog!, "near", 0, 0.5)
+      .step(0.1)
+      .name("Fog Near");
     fogRangeController.onChange((value: number) => {
       (this.scene.fog as THREE.Fog).near = value;
     });
 
     // 通过GUI界面控制器动态调整场景雾化效果的远距离参数。
-    const fogFarController = gui.add(this.scene.fog!, 'far', 0, 1000).step(1).name('Fog Far');
+    const fogFarController = gui
+      .add(this.scene.fog!, "far", 0, 1000)
+      .step(1)
+      .name("Fog Far");
 
     // 当雾化远距离值发生变化时，更新场景的雾化远距离参数。
     fogFarController.onChange((value: number) => {
@@ -170,7 +185,10 @@ export default class ThreeDemo {
    * @param {number} [size=1] 方向光长方体的大小
    */
   addDirectionalLightHelper(light: THREE.DirectionalLight, size = 1) {
-    const directionalLightHelper = new THREE.DirectionalLightHelper(light, size);
+    const directionalLightHelper = new THREE.DirectionalLightHelper(
+      light,
+      size,
+    );
     this.scene.add(directionalLightHelper);
   }
 
@@ -188,7 +206,7 @@ export default class ThreeDemo {
    * 处理窗口大小改变事件，动态调整相机视角和渲染器尺寸。
    */
   handleWindowResize() {
-    window.addEventListener('resize', () => {
+    window.addEventListener("resize", () => {
       // 当窗口大小改变时，更新相机的宽高比并重新设置渲染器的大小
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
@@ -276,7 +294,10 @@ export default class ThreeDemo {
   async setUpEnvironment() {
     // 使用PMREMGenerator从一个房间环境创建环境贴图
     const pmremGenerator = new THREE.PMREMGenerator(this.renderer);
-    this.scene.environment = pmremGenerator.fromScene(RoomEnvironment(), 0.04).texture;
+    this.scene.environment = pmremGenerator.fromScene(
+      RoomEnvironment(),
+      0.04,
+    ).texture;
   }
 
   /**
@@ -323,32 +344,35 @@ export default class ThreeDemo {
 
     // 初始化天空参数，用于渲染天空盒。参数基于物理模型，可调整天空的外观。
     const skyParameters = {
-      turbidity: 10, // 湍流度，影响天空的总体颜色温度
-      rayleigh: 3, // 瑞利散射系数，影响天空的蓝色强度
-      mieCoefficient: 0.005, // 米散射系数，影响天空的红色和橙色强度
-      mieDirectionalG: 0.95, // 米散射的定向因子，影响云彩的形状
-      elevation: -2.2, // 观察者的海拔高度，正值表示向上看，负值表示向下看
-      azimuth: 180, // 观察者的方位角，0为正北，90为正东，180为正南，270为正西
+      turbidity: 10,
+      // 湍流度，影响天空的总体颜色温度
+      rayleigh: 3,
+      // 瑞利散射系数，影响天空的蓝色强度
+      mieCoefficient: 0.005,
+      // 米散射系数，影响天空的红色和橙色强度
+      mieDirectionalG: 0.95,
+      // 米散射的定向因子，影响云彩的形状
+      elevation: -2.2,
+      // 观察者的海拔高度，正值表示向上看，负值表示向下看
+      azimuth: 180,
+      // 观察者的方位角，0为正北，90为正东，180为正南，270为正西
       exposure: renderer.toneMappingExposure, // 曝光设置，用于调整最终渲染图像的亮度
     };
-
     const sun = new THREE.Vector3(); // 定义太阳位置变量
 
     // 更新天空材质参数和太阳位置的函数
     const updateSky = () => {
       const uniforms = (sky.material as THREE.ShaderMaterial).uniforms;
-      uniforms['turbidity'].value = skyParameters.turbidity;
-      uniforms['rayleigh'].value = skyParameters.rayleigh;
-      uniforms['mieCoefficient'].value = skyParameters.mieCoefficient;
-      uniforms['mieDirectionalG'].value = skyParameters.mieDirectionalG;
+      uniforms["turbidity"].value = skyParameters.turbidity;
+      uniforms["rayleigh"].value = skyParameters.rayleigh;
+      uniforms["mieCoefficient"].value = skyParameters.mieCoefficient;
+      uniforms["mieDirectionalG"].value = skyParameters.mieDirectionalG;
 
       // 计算太阳在天空中的位置
       const phi = THREE.MathUtils.degToRad(90 - skyParameters.elevation);
       const theta = THREE.MathUtils.degToRad(skyParameters.azimuth);
-
       sun.setFromSphericalCoords(1, phi, theta);
-
-      uniforms['sunPosition'].value.copy(sun);
+      uniforms["sunPosition"].value.copy(sun);
 
       // 更新渲染器的曝光设置
       renderer.toneMappingExposure = skyParameters.exposure;
@@ -356,13 +380,48 @@ export default class ThreeDemo {
     };
 
     // 使用GUI来控制天空参数，包括湍流度、瑞利散射系数等，并在参数改变时更新天空渲染
-    gui.add(skyParameters, 'turbidity').min(0).max(20).step(0.1).onChange(updateSky);
-    gui.add(skyParameters, 'rayleigh').min(0).max(4).step(0.001).onChange(updateSky);
-    gui.add(skyParameters, 'mieCoefficient').min(0).max(0.1).step(0.001).onChange(updateSky);
-    gui.add(skyParameters, 'mieDirectionalG').min(0).max(1).step(0.001).onChange(updateSky);
-    gui.add(skyParameters, 'elevation').min(-3).max(2).step(0.01).onChange(updateSky);
-    gui.add(skyParameters, 'azimuth').min(-180).max(180).step(0.1).onChange(updateSky);
-    gui.add(skyParameters, 'exposure').min(0).max(1).step(0.00001).onChange(updateSky);
+    gui
+      .add(skyParameters, "turbidity")
+      .min(0)
+      .max(20)
+      .step(0.1)
+      .onChange(updateSky);
+    gui
+      .add(skyParameters, "rayleigh")
+      .min(0)
+      .max(4)
+      .step(0.001)
+      .onChange(updateSky);
+    gui
+      .add(skyParameters, "mieCoefficient")
+      .min(0)
+      .max(0.1)
+      .step(0.001)
+      .onChange(updateSky);
+    gui
+      .add(skyParameters, "mieDirectionalG")
+      .min(0)
+      .max(1)
+      .step(0.001)
+      .onChange(updateSky);
+    gui
+      .add(skyParameters, "elevation")
+      .min(-3)
+      .max(2)
+      .step(0.01)
+      .onChange(updateSky);
+    gui
+      .add(skyParameters, "azimuth")
+      .min(-180)
+      .max(180)
+      .step(0.1)
+      .onChange(updateSky);
+    gui
+      .add(skyParameters, "exposure")
+      .min(0)
+      .max(1)
+      .step(0.00001)
+      .onChange(updateSky);
 
     // 初始调用，用于设置初始天空状态
     updateSky();
