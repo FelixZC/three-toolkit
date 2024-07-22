@@ -1,23 +1,24 @@
-import fireworkFragmentShader from "@/shaders/fireworks/fragment.glsl";
-import fireworkVertexShader from "@/shaders/fireworks/vertex.glsl";
-import { FontLoader, TextGeometry, TextGeometryParameters } from "three-stdlib";
 import gsap from "gsap";
+import fireworkVertexShader from "@/shaders/fireworks/vertex.glsl";
+import fireworkFragmentShader from "@/shaders/fireworks/fragment.glsl";
 import * as THREE from "three";
-import ThreeDemo from "./init";
-interface FireworkConfig {
+import Base from "@src/utils/three/init";
+
+export interface FireworkConfig {
   spreadAngle: number;
   speedFactor: number;
   gravityFactor: number;
   explodeY: number;
 }
-interface FireworkParticle {
+
+export interface FireworkParticle {
   isExploded: boolean;
   mesh: THREE.Points;
   position: THREE.Vector3;
 }
 
 /**
- * 烟花爆炸效果引用了大佬的效果(reference:):https://github.com/jamestw13/fireworks-shaders-threejs
+ * 烟花爆炸效果引用了大佬的效果(reference):https://github.com/jamestw13/fireworks-shaders-threejs
  * TODO:
  * 粒子运动逻辑：改进爆炸后粒子的运动逻辑，使其更加自然和多样化，例如考虑重力影响、风向扰动等。
  * 颜色过渡：优化颜色变化，使粒子在生命周期内有更自然的色彩过渡效果。
@@ -27,22 +28,22 @@ interface FireworkParticle {
  * 粒子消散：粒子消散过程可以更细腻，例如通过透明度逐渐降低而非突然消失。
  * 性能优化：确保大量粒子动画不会显著影响性能，可能需要考虑粒子池技术来复用粒子对象。
  */
-class Firework {
-  demo: ThreeDemo;
+export default class Firework {
+  base: Base;
   config: FireworkConfig;
   fireworks: FireworkParticle[];
   gravity: THREE.Vector3;
   textures: THREE.Texture[];
   clock: THREE.Clock;
   deltaTime: number;
-  constructor(demo: ThreeDemo, config?: FireworkConfig);
+  constructor(base: Base, config?: FireworkConfig);
   /**
    * 构造函数：初始化烟花模拟器
-   * @param {Object} demo - 用于烟花效果演示的对象
+   * @param {Object} base - 用于烟花效果演示的对象
    * @param {Object} config - 可选配置对象，用于重写默认配置
    */
   constructor(
-    demo: ThreeDemo,
+    base: Base,
     config: FireworkConfig = {
       spreadAngle: Math.PI / 4,
       // 烟花扩散角度
@@ -53,7 +54,7 @@ class Firework {
       explodeY: 10, // 烟花爆炸的Y轴偏移
     },
   ) {
-    this.demo = demo;
+    this.base = base;
     // 设置默认配置，并允许通过config参数进行覆盖
     this.config = config;
     this.fireworks = []; // 用于存储所有烟花对象的数组
@@ -142,7 +143,7 @@ class Firework {
     // 创建粒子网格并设置其位置，然后将其添加到场景中
     firework.mesh = new THREE.Points(geometry, material);
     firework.mesh.position.copy(firework.position);
-    this.demo.scene.add(firework.mesh);
+    this.base.scene.add(firework.mesh);
 
     // 将该粒子添加到粒子列表中以进行后续管理
     this.fireworks.push(firework);
@@ -169,7 +170,7 @@ class Firework {
    * @param {Object} firework 烟火对象，包含烟火的网格和几何体等属性
    */
   destroy(firework: FireworkParticle) {
-    this.demo.scene.remove(firework.mesh); // 从场景中移除烟火的网格
+    this.base.scene.remove(firework.mesh); // 从场景中移除烟火的网格
     firework.mesh.geometry.dispose(); // 释放几何体资源
   }
 
@@ -247,7 +248,11 @@ class Firework {
       uniforms: {
         uSize: new THREE.Uniform(size),
         // 粒子大小的统一变量
-        uResolution: new THREE.Uniform(this.demo.resolution),
+        uResolution: new THREE.Uniform(new THREE.Vector3(
+          window.innerWidth,
+          window.innerHeight,
+          1,
+        )),
         // 分辨率的统一变量
         uTexture: new THREE.Uniform(texture),
         // 纹理的统一变量
@@ -264,7 +269,7 @@ class Firework {
     const newMesh = new THREE.Points(newGeometry, newMaterial);
     newMesh.position.copy(firework.position); // 复制位置
     firework.mesh = newMesh;
-    this.demo.scene.add(firework.mesh); // 添加到场景
+    this.base.scene.add(firework.mesh); // 添加到场景
 
     // 使用gsap库进行材质动画处理，动画完成后自动销毁烟火对象
     gsap.to(
@@ -283,120 +288,4 @@ class Firework {
       },
     );
   }
-}
-/**
- * 向场景中添加烟花效果。
- * @param {Object} demo - 包含场景(scene)等THREE相关对象的示例实例，用于添加和管理烟花对象。
- */
-export function addFireWork(demo: ThreeDemo) {
-  const fireworkController = new Firework(demo);
-  // 添加键盘事件监听器
-  document.addEventListener("keydown", (event) => {
-    // 检查是否为空格键被按下
-    if (event.code === "Space") {
-      const position = new THREE.Vector3(
-        Math.random() * 10 - 5,
-        0,
-        Math.random() * 10 - 5,
-      );
-      fireworkController.launch(position); // 用户按下空格键时创建新的烟花
-    }
-  });
-  return fireworkController.fireworks;
-}
-
-/**
- * 在给定的场景中添加指定数量的星星。
- * @param {Object} demo 包含场景(scene)等Three相关对象和数据的示例对象。
- * @param {number} count 要添加的星星数量。
- */
-export function addStars(demo: ThreeDemo, count: number) {
-  // 加载星星纹理
-  const textureLoader = new THREE.TextureLoader();
-  const starTexture = textureLoader.load(
-    "/src/assets/images/textures/star_texture.png",
-  ); // 替换为实际星星纹理的路径
-
-  // 创建星星材质
-  const starMaterial = new THREE.PointsMaterial({
-    map: starTexture,
-    size: 0.1,
-    // 可根据需要调整星星的大小
-    color: 0xffffff,
-    transparent: true,
-    blending: THREE.AdditiveBlending, // 使用加性混合让星星更亮
-  });
-  const stars: THREE.Points<
-    THREE.SphereGeometry,
-    THREE.PointsMaterial,
-    THREE.Object3DEventMap
-  >[] = [];
-  // 循环创建指定数量的星星并添加到场景中
-  for (let i = 0; i < count; i++) {
-    const geometry = new THREE.SphereGeometry(0.01, 32, 32); // 使用小球几何体作为星星的形状
-    const star = new THREE.Points(geometry, starMaterial);
-
-    // 随机定位星星
-    const [x, y, z] = Array(3)
-      .fill(Math.E)
-      .map(() => THREE.MathUtils.randFloatSpread(1000)); // 调整范围以适应你的场景大小
-    star.position.set(x, y, z);
-    stars.push(star);
-    demo.scene.add(star);
-  }
-  return stars;
-}
-interface customTextGeometryParameters
-  extends Omit<TextGeometryParameters, "font"> {
-  bevelSegments: number;
-}
-export function addText3D(
-  demo: {
-    scene: THREE.Scene;
-  },
-  text: string = "hello world",
-  position: THREE.Vector3 = new THREE.Vector3(0, 10, 0),
-  textMaterialOptions: THREE.MeshPhongMaterialParameters = {
-    color: 0xffffff,
-  },
-  textGeometryOption: customTextGeometryParameters = {
-    size: 1,
-    height: 0.1,
-    bevelEnabled: true,
-    // 启用斜面以获得更平滑的边缘
-    bevelThickness: 0.05,
-    bevelSize: 0.05,
-    bevelOffset: 0,
-    bevelSegments: 5,
-  },
-  fontUrl: string = "https://unpkg.com/three@0.77.0/examples/fonts/helvetiker_regular.typeface.json",
-): Promise<THREE.Mesh> {
-  return new Promise((resolve, reject) => {
-    // 创建字体加载器
-    const fontLoader = new FontLoader();
-    fontLoader.load(
-      fontUrl,
-      (font) => {
-        // 创建3D文本几何体
-        const parameters: TextGeometryParameters = {
-          font: font,
-          ...textGeometryOption,
-        };
-        const textGeometry = new TextGeometry(text, parameters);
-        // textGeometry.userData.text = text
-        // textGeometry.userData.parameters = parameters
-        // 创建材质并应用到文本上
-        const textMaterial = new THREE.MeshPhongMaterial(textMaterialOptions);
-        const textMesh = new THREE.Mesh(textGeometry, textMaterial);
-        demo.scene.add(textMesh);
-        position.x = position.x - text.length / 2;
-        textMesh.position.copy(position);
-        resolve(textMesh);
-      },
-      undefined,
-      (err) => {
-        reject(err);
-      },
-    );
-  });
 }

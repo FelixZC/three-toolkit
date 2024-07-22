@@ -1,7 +1,7 @@
 import chinaJson from "@/assets/data/china-mercator.json";
 import * as THREE from "three";
-import ThreeDemo from "@/utils/three/init";
-const { scene, camera } = new ThreeDemo({
+import Base from "@/utils/three/init";
+const { scene, camera } = new Base({
   isSetUpStats: true, // 是否设置统计信息显示
   isSetUpControls: true, // 是否设置相机控制
   isAddAxesHelper: false, // 是否添加坐标轴辅助线

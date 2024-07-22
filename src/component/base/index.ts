@@ -1,4 +1,5 @@
-import { addFireWork, addStars, addText3D } from "@/utils/three/effect";
+import { addFireWork, addStars, addFog, addSkyBox, addRoomEnvironmentDefault } from "@/utils/three/environment";
+import { addText3D } from '@src/utils/three/font'
 import {
   addPhysicsForFont,
   addPhysicsForModel,
@@ -11,14 +12,15 @@ import { getRandomColor } from "@/utils/common";
 import { loadTexturesFromAtlas, useGltfLoader } from "@/utils/three/loader";
 import { setupAutoRotate } from "@/utils/three/animate";
 import * as THREE from "three";
-import ThreeDemo from "@/utils/three/init";
+import Base from "@/utils/three/init";
 import type { Body, Vec3, World } from "cannon-es";
+import { addAmbientLightDefault, addDirectionalLightDefault } from '@/utils/three/light'
 /**
  * 创建一个简单的物理模拟场景
- * @param {Object} demo - 包含场景、相机和渲染器的对象
+ * @param {Object} base - 包含场景、相机和渲染器的对象
  */
-async function addPhysicsTest(demo: ThreeDemo, world: World) {
-  const { scene, camera, renderer } = demo;
+async function addPhysicsTest(base: Base, world: World) {
+  const { scene, camera, renderer } = base;
 
   //添加地面
   const { groundBody, groundMesh } = createGround();
@@ -36,7 +38,7 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
   ];
   for (let i = 0; i < fontList.length; i++) {
     const textMesh = await addText3D(
-      demo,
+      base,
       fontList[i],
       new THREE.Vector3(3 - i, 10 + i, i * 3 - 6),
     );
@@ -55,7 +57,9 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
     // 半径增大
     position: new THREE.Vector3(0, 5, 5),
     // 改变初始位置
-    color: 0x0000ff, // 改变颜色为红色
+    meshMaterialOptions: {
+      color: 0x0000ff, // 改变颜色为红色
+    }
   });
   world.addBody(sphereBody);
   scene.add(sphereMesh);
@@ -68,9 +72,9 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
     new THREE.Vector3(0.25, 0.25, 0.25),
   );
   const { gltfBody: planeGltfBody } = addPhysicsForModel(planeModel, {}, 1);
-  demo.scene.add(planeModel);
+  base.scene.add(planeModel);
   world.addBody(planeGltfBody);
-  // setupModelFlying(demo, planeModel, planeGltfBody)
+  // setupModelFlying(base, planeModel, planeGltfBody)
   //添加房子
   const houseModel = await loadGltfModelFunc(
     "/src/assets/model/gltf/littlest-tokyo.glb",
@@ -78,7 +82,7 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
     new THREE.Vector3(0.01, 0.01, 0.01),
   );
   const { gltfBody: houseGltfBody } = addPhysicsForModel(houseModel);
-  demo.scene.add(houseModel);
+  base.scene.add(houseModel);
   world.addBody(houseGltfBody);
   /********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************** */
   // 渲染一个带多贴图的浮旋立方体
@@ -99,7 +103,7 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
       }),
   );
   setupAutoRotate(floatCubeMesh);
-  demo.scene.add(floatCubeMesh);
+  base.scene.add(floatCubeMesh);
   world.addBody(floatCubeBody);
   /********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************** */
   // 鼠标点击事件处理
@@ -116,7 +120,9 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
       const { sphereBody: ballBody, sphereMesh: ballMesh } = createSphere({
         radius: 0.5,
         position: new THREE.Vector3(),
-        color: getRandomColor(),
+        meshMaterialOptions: {
+          color: getRandomColor(),
+        }
       });
 
       // 使用Three的Raycaster来计算鼠标位置和场景中物体的交点
@@ -170,15 +176,20 @@ async function addPhysicsTest(demo: ThreeDemo, world: World) {
 }
 
 // 示例用法
-const demo = new ThreeDemo({
-  isAddAxesHelper: false,
-  // isAddGridHelper: false,
-  isAddCameraHelper: false,
-  // isSetUpGUI: false,
-  // isSetUpControls: false
+const base = new Base({
+  isSetUpGUI: true,
+  isSetUpControls: true
+  // isAddAxesHelper: true,
+  // isAddCameraHelper: true,
+  // isAddGridHelper: true,
 });
+
 const world = createDefaultPhysicsWorld();
-addPhysicsTest(demo, world);
-addFireWork(demo);
+addPhysicsTest(base, world);
+addFireWork(base);
 // // 添加一定数量的星星
-addStars(demo, 1000); // 数量根据实际情况调整
+addStars(base, 1000); // 数量根据实际情况调整
+addFog(base)
+addAmbientLightDefault(base)
+addDirectionalLightDefault(base)
+addSkyBox(base)

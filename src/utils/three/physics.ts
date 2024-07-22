@@ -55,7 +55,7 @@ export function addPhysicsForMesh(
 interface CreateGroundOptions {
   size?: number;
   depth?: number;
-  meshMaterialOptions?: THREE.MeshStandardMaterialParameters;
+  meshMaterialOptions?: THREE.MeshPhysicalMaterialParameters;
   physicsMaterialOptions?: CannonMaterialOptions;
 }
 
@@ -89,7 +89,7 @@ export function createGround({
   const groundGeo = new THREE.BoxGeometry(size, depth, size);
 
   // 使用提供的颜色和额外的材质选项创建地面的渲染材质
-  const groundMaterial = new THREE.MeshStandardMaterial({
+  const groundMaterial = new THREE.MeshPhysicalMaterial({
     ...meshMaterialOptions,
   });
 
@@ -113,8 +113,7 @@ interface CreateCubeOptions {
   size?: number;
   position?: THREE.Vector3;
   mass?: number;
-  color?: number;
-  meshMaterialOptions?: object;
+  meshMaterialOptions?: THREE.MeshPhysicalMaterialParameters;
   physicsMaterialOptions?: CannonMaterialOptions;
 }
 
@@ -134,8 +133,9 @@ export function createCube({
   size = 1,
   position = new THREE.Vector3(5, 5, 5),
   mass = 1,
-  color = 0xff0000,
-  meshMaterialOptions = {},
+  meshMaterialOptions = {
+    color: 0xff0000,
+  },
   physicsMaterialOptions,
 }: CreateCubeOptions = {}): {
   cubeMesh: THREE.Mesh;
@@ -146,8 +146,7 @@ export function createCube({
   const cubeGeo = new THREE.BoxGeometry(size, size, size);
 
   // 创建立方体材质
-  const cubeMaterial = new THREE.MeshStandardMaterial({
-    color,
+  const cubeMaterial = new THREE.MeshPhysicalMaterial({
     ...meshMaterialOptions,
   });
 
@@ -172,9 +171,8 @@ interface CreateSphereOptions {
   position?: THREE.Vector3;
   velocity?: THREE.Vector3;
   angularVelocity?: THREE.Vector3;
-  color?: string | number;
   mass?: number;
-  meshMaterialOptions?: object;
+  meshMaterialOptions?: THREE.MeshPhysicalMaterialParameters;
   physicsMaterialOptions?: CannonMaterialOptions;
 }
 
@@ -197,9 +195,10 @@ export function createSphere({
   position = new THREE.Vector3(),
   velocity = new THREE.Vector3(),
   angularVelocity = new THREE.Vector3(),
-  color = "0x00ff00",
   mass = 1,
-  meshMaterialOptions = {},
+  meshMaterialOptions = {
+    color: "0x00ff00",
+  },
   physicsMaterialOptions,
 }: CreateSphereOptions): {
   sphereMesh: THREE.Mesh;
@@ -210,8 +209,7 @@ export function createSphere({
   const sphereGeo = new THREE.SphereGeometry(radius, 32, 32);
 
   // 创建球体材质
-  const sphereMaterial = new THREE.MeshStandardMaterial({
-    color,
+  const sphereMaterial = new THREE.MeshPhysicalMaterial({
     ...meshMaterialOptions,
   });
   const sphereMesh = new THREE.Mesh(sphereGeo, sphereMaterial);
@@ -304,7 +302,7 @@ export function addPhysicsForModel(
   const { meshBody: gltfBody, meshBodyMaterial: gltfBodyMaterial } =
     addPhysicsForMesh(model, materialOptions, mass);
   gltfBody.addShape(new CANNON.Box(halfExtents));
-  gltfBody.addEventListener("collide", () => {});
+  gltfBody.addEventListener("collide", () => { });
   return {
     model,
     gltfBody,

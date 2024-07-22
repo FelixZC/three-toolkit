@@ -1,9 +1,5 @@
 import * as THREE from "three";
-export interface Demo {
-  renderer: THREE.Renderer;
-  scene: THREE.Scene;
-  camera: THREE.Camera;
-}
+import Base from "./init";
 
 /**
  * 设置鼠标拖动旋转立方体的事件监听器
@@ -80,20 +76,20 @@ export function setupAutoRotate(
 
 /**
  * 设置并启动模型的飞行动画。
- * @param {Object} demo 包含renderer，scene，camera的对象。
+ * @param {Object} base 包含renderer，scene，camera的对象。
  * @param {THREE.Object3D} model 要飞行的3D模型。
  * @param {THREE.Object3D} [modelBody] 物理引擎中的模型体（可选）。
  */
 export function setupModelFlying(
-  demo: Demo,
+  base: Base,
   model: THREE.Object3D,
   modelBody?: THREE.Object3D,
 ) {
   // 参数有效性验证
-  if (!demo || !demo.renderer || !demo.scene || !demo.camera || !model) {
+  if (!base || !base.renderer || !base.scene || !base.camera || !model) {
     return;
   }
-  const { renderer, scene, camera } = demo;
+  const { renderer, scene, camera } = base;
 
   // 模型的初始位置
   const lastPosition = model.position.clone();
@@ -122,7 +118,6 @@ export function setupModelFlying(
 
     // 更新上一次的位置
     lastPosition.copy(model.position);
-
     // 如果存在物理体，更新其位置和旋转
     if (modelBody) {
       modelBody.position.copy(model.position);
