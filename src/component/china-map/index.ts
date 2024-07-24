@@ -4,12 +4,8 @@ import Base from "@/utils/three/init";
 const { scene, camera } = new Base({
   isSetUpStats: true, // 是否设置统计信息显示
   isSetUpControls: true, // 是否设置相机控制
-  isAddAxesHelper: false, // 是否添加坐标轴辅助线
-  isAddGridHelper: false, // 是否添加网格辅助线
   isAddCameraHelper: true, // 是否添加相机辅助线
   isSetUpGUI: true, // 是否设置图形用户界面
-  isSetSky: false,
-  isSetUpEnvironment: true, // 是否设置环境光,
 });
 camera.fov = 45;
 camera.far = 1000000000;

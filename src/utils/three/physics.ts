@@ -309,6 +309,7 @@ export function addPhysicsForModel(
     gltfBodyMaterial,
   };
 }
+
 export function addPhysicsForFont(
   mesh: THREE.Mesh,
   materialOptions?: CannonMaterialOptions,

@@ -15,7 +15,6 @@ export default class Slider extends kokomi.Component {
       value: number;
     };
   };
-  am: kokomi.AssetManager;
   ws: kokomi.WheelScroller;
   dd: kokomi.DragDetecter;
   constructor(base: Experience) {

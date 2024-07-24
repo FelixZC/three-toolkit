@@ -1,4 +1,4 @@
-import { addFireWork, addStars, addFog, addSkyBox, addRoomEnvironmentDefault } from "@/utils/three/environment";
+import { addFireWork, addStars, addFog, addSkyBox } from "@/utils/three/environment";
 import { addText3D } from '@src/utils/three/font'
 import {
   addPhysicsForFont,
