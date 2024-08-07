@@ -146,7 +146,6 @@ export default class Base {
     this.camera = new THREE.PerspectiveCamera(90, this.aspectRatio, 0.1, 100);
     this.camera.position.set(5, 2, 8);
     this.camera.aspect = this.aspectRatio;
-    this.camera.updateProjectionMatrix();
     // 将相机添加到场景中
     this.scene.add(this.camera);
   }

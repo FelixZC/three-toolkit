@@ -11,7 +11,7 @@ Web 3D练习，从入门到入土
 #### 例子
 Three.js官方网站提供了丰富的示例来帮助开发者学习和理解如何使用这个强大的3D库。这些示例覆盖了从基础到高级的多种技术，包括但不限于：
 
-1. **基础示例**：如创建一个最基本的3D场景，包含渲染器、摄像机和一个简单的几何体（如立方体或球体）。
+1. **基础示例**：如创建一个最基本的3D场景，包含渲染器、摄像机和一个简单的几何体（如立方体或球体）。****
 2. **材质与纹理**：展示不同类型的材质应用，如基础颜色材质、光照材质、纹理贴图等。
 3. **光照与阴影**：演示如何添加光源（如环境光、点光源、聚光灯等）以及实现阴影效果。
 4. **动画与交互**：包括物体旋转、缩放等基本动画，以及鼠标和键盘交互控制3D场景。
@@ -76,20 +76,20 @@ Three.js官方网站提供了丰富的示例来帮助开发者学习和理解如
    - 实现除 OrbitControls 以外的交互方式，如射线拾取（`THREE.Raycaster`）、鼠标拖拽旋转、触摸手势识别（如集成 Hammer.js）。
    - 根据交互结果更新场景状态、触发特效或动画。
 
+7. **音频与音效**
+   - 添加背景音乐和空间化音效，利用 `THREE.AudioListener`、`THREE.Audio`、`THREE.PositionalAudio`。
+   - 使用 `THREE.AudioLoader` 加载音频文件，并通过 `THREE.AudioAnalyser` 实现音频可视化。
+
 **待实现功能**
 1. **后期处理效果**
    - 使用 `THREE.EffectComposer` 结合 `THREE.ShaderPass` 实现景深、模糊、色彩校正、噪点、像素化等后期处理效果。
    - 利用 `THREE.ShaderLib` 提供的着色器或编写自定义 GLSL 着色器实现独特的视觉效果。
 
-2. **音频与音效**
-   - 添加背景音乐和空间化音效，利用 `THREE.AudioListener`、`THREE.Audio`、`THREE.PositionalAudio`。
-   - 使用 `THREE.AudioLoader` 加载音频文件，并通过 `THREE.AudioAnalyser` 实现音频可视化。
-
-3. **多视图与分屏显示**
+2. **多视图与分屏显示**
    - 创建多个相机、渲染器和 canvas 元素，实现不同视角的并列显示或分屏布局。
    - 使用 `THREE.StereoCamera` 实现立体视图，或 `THREE.WebGLMultisampleRenderTarget` 提升抗锯齿效果。
 
-4. **性能优化**
+**3**. **性能优化**
    - 使用 `THREE.LOD` 实现细节层次，根据相机距离自动切换模型的低模和高模版本。
    - 采用 `THREE.BufferGeometry`、`THREE.InstancedBufferGeometry`、`THREE.InstancedMesh` 优化相似对象的渲染。
    - 利用 `renderer.info` 监控渲染统计信息，据此调整渲染策略以降低 GPU 负荷。

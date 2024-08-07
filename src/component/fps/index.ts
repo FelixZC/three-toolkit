@@ -17,6 +17,7 @@ export default class Sketch extends kokomi.Base {
     that.camera.near = 0.1;
     that.camera.far = 1000;
     that.camera.rotation.order = 'YXZ';
+    that.camera.updateProjectionMatrix();
     // 添加环境光和方向光，用于场景中的照明
     const fillLight1 = new THREE.HemisphereLight(0x8dc1de, 0x00668d, 1.5);
     fillLight1.position.set(2, 1, 1);

@@ -3,11 +3,11 @@ import Stats from 'stats.js';
 import { OrbitControls, ConvexObjectBreaker, ConvexGeometry } from "three-stdlib";
 //@ts-ignore
 import Ammo from 'ammo.js'
-// import Ammo from 'ammojs3'
 import * as kokomi from "kokomi.js";
 export default class Sketch extends kokomi.Base {
   create() {
     const that = this
+    window.Ammo = Ammo;
     // Graphics variables
     let stats: Stats;
     let textureLoader: THREE.TextureLoader;
@@ -43,6 +43,7 @@ export default class Sketch extends kokomi.Base {
       that.scene.background = new THREE.Color(0xbfd1e5);
       that.camera.position.set(- 14, 8, 16);
       // that.renderer.antialias = true;
+      that.camera.updateProjectionMatrix();
       that.renderer.shadowMap.enabled = true;
       let controls = new OrbitControls(that.camera, that.renderer.domElement);
       controls.target.set(0, 2, 0);
