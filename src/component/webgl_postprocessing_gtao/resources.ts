@@ -1,9 +1,10 @@
 import type * as kokomi from "kokomi.js";
 const resources: kokomi.ResourceItem[] = [
   {
-    name: "fox",
+    name: "littlest-tokyo",
     type: "gltfModel",
-    path: "../../assets/model/gltf/fox.glb",
+    path: "../../assets/model/gltf/littlest-tokyo.glb",
+
   },
 ];
 export default resources;
