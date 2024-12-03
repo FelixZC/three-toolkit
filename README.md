@@ -1,37 +1,75 @@
-# three-practice
+# three-toolkit
 
 #### 介绍
-Web 3D练习，从入门到入土
+Web 3D，从入门到入土
 
-#### 软件架构
-软件架构说明
+#### 示例
+<img src="docs/images/three.png" alt="这是图片的描述0">
+<img src="docs/images/three(1).png" alt="这是图片的描述1">
+<img src="docs/images/three(2).png" alt="这是图片的描述1">
+<img src="docs/images/three(3).png" alt="这是图片的描述1">
+<img src="docs/images/three(4).png" alt="这是图片的描述1">
 
+#### 功能
+**已实现功能**
+1. **基础组件设置**
+   - **渲染器**：配置 WebGL 渲染器的各项参数，如抗锯齿、sRGB 输出编码、尺寸调整、设备像素比、背景颜色，并添加窗口 resize 事件监听。
+   - **相机**：创建透视相机，设定视角、宽高比、近/远裁剪面距离，设置初始位置和更新投影矩阵。
+   - **灯光**
+     - **环境光**：添加全局环境光。
+     - **定向光**：创建定向光，可调整颜色和强度。
+   - **场景**
+     - **场景创建**：初始化场景对象。
+     - **雾效**：添加雾效，可调节雾的颜色、起始距离和结束距离。
+   - **交互功能**
+     - **OrbitControls**：实现相机的旋转、平移、缩放交互。
+   - **GUI 控制面板**
+     - **光照控制**：调整环境光和定向光的颜色和强度。
+     - **雾效控制**：调整雾的颜色、起始距离和结束距离。
+   - **辅助工具**
+     - **坐标轴辅助线**
+     - **网格辅助**
+     - **平面辅助**
+     - **点光源辅助**
+     - **聚光灯辅助**
+     - **方向光辅助**
+     - **相机辅助**
 
-#### 安装教程
+2. **3D模型加载**
+   - 使用模型加载器（如 `THREE.GLTFLoader`、`THREE.ObjectLoader`）加载多种格式（`.gltf`, `.glb`, `.obj`, `.fbx` 等）的 3D 模型。
+   - 对加载的模型进行位置、旋转、缩放和材质属性的调整。
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+3. **动画与关键帧**
+   - 定义并播放关键帧动画，利用 `THREE.AnimationMixer` 和 `THREE.KeyframeTrack` 进行控制。
+   - 通过 `THREE.AnimationClip`、`THREE.AnimationAction` 等 API 实现精细的动画管理。
 
-#### 使用说明
+4. **粒子系统**
+   - 使用 `THREE.Points` 或 `THREE.PointsMaterial` 创建粒子系统，实现诸如烟雾、火焰、星空、雪花等效果。
+   - 结合 `THREE.ShaderMaterial` 和自定义着色器实现复杂的粒子效果。
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+5. **物理模拟**
+   - 集成第三方物理引擎（如 Cannon.js 或 Ammo.js），使用对应的插件（如 `THREE.CannonPhysics` 或 `THREE.AmmoPhysics`）。
+   - 为场景对象添加物理属性，处理碰撞检测、重力、刚体动力学等。
 
-#### 参与贡献
+6. **用户交互**
+   - 实现除 OrbitControls 以外的交互方式，如射线拾取（`THREE.Raycaster`）、鼠标拖拽旋转、触摸手势识别（如集成 Hammer.js）。
+   - 根据交互结果更新场景状态、触发特效或动画。
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+7. **音频与音效**
+   - 添加背景音乐和空间化音效，利用 `THREE.AudioListener`、`THREE.Audio`、`THREE.PositionalAudio`。
+   - 使用 `THREE.AudioLoader` 加载音频文件，并通过 `THREE.AudioAnalyser` 实现音频可视化。
 
+8. **后期处理效果**
+   - 使用 `THREE.EffectComposer` 结合 `THREE.ShaderPass` 实现景深、模糊、色彩校正、噪点、像素化等后期处理效果。
+   - 利用 `THREE.ShaderLib` 提供的着色器或编写自定义 GLSL 着色器实现独特的视觉效果。
 
-#### 特技
+9. **多视图与分屏显示**
+   - 创建多个相机、渲染器和 canvas 元素，实现不同视角的并列显示或分屏布局。
+   - 使用 `THREE.StereoCamera` 实现立体视图，或 `THREE.WebGLMultisampleRenderTarget` 提升抗锯齿效果。
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+**待实现功能**
+
+1. **性能优化**
+   - 使用 `THREE.LOD` 实现细节层次，根据相机距离自动切换模型的低模和高模版本。
+   - 采用 `THREE.BufferGeometry`、`THREE.InstancedBufferGeometry`、`THREE.InstancedMesh` 优化相似对象的渲染。
+   - 利用 `renderer.info` 监控渲染统计信息，据此调整渲染策略以降低 GPU 负荷。
