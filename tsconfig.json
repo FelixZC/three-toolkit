@@ -1,0 +1,69 @@
+{
+  "compilerOptions": {
+    // 目标ECMAScript版本，'ES3/ES5/ES6/ES2015/ES2016/ES2017/ES2018/ES2019/ES2020/ESNext'等
+    "target": "ES6",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "baseUrl": "./", // 基础目录，用于解析所有模块的入口点
+    "paths": {
+      "*": ["./node_modules/*"],
+      "@/*": ["src/*"],
+      "@src/*": ["src/*"]
+    },
+    // 指定要包含在编译中的库文件
+    "lib": [
+      "DOM",
+      "ESNext",
+      "DOM.Iterable"
+    ],
+    // 跳过声明文件的类型检查
+    "skipLibCheck": true,
+    // 禁止对同一文件的不一致大小写引用
+    "forceConsistentCasingInFileNames": true,
+    // 指定使用哪个模块代码生成：'none', 'commonjs', 'amd', 'system', 'umd', 'es2015', 'ESNext' 等
+    "module": "ESNext",
+    // 启用所有严格类型检查选项
+    "strict": true,
+    // 启用对JS文件的类型检查
+    "checkJs": false,
+    // 启用对声明文件（`.d.ts`文件）的生成
+    "declaration": true,
+    // 指定输出目录
+    "outDir": "./dist",
+    // 指定源文件的根目录
+    "rootDir": "./src",
+    // 启用/关闭保留值的原始类型信息
+    "preserveConstEnums": true,
+    // 启用/禁用对未声明的变量的值的推断
+    "noImplicitAny": true,
+    // 启用/禁用只从检查的文件中排除声明合并
+    "isolatedModules": false,
+    // 启用/禁用对未使用的本地变量的错误
+    "noUnusedLocals": true,
+    // 启用/禁用对未使用的参数的错误
+    "noUnusedParameters": true,
+    // 启用/禁用对可能错误的函数返回值的推断
+    "noImplicitReturns": true,
+    // 启用/禁用对未声明的全局变量的错误
+    "noImplicitThis": false,
+    // 启用/禁用严格模式
+    "strictFunctionTypes": true,
+    // 启用/禁用严格属性初始化
+    "strictPropertyInitialization": false,
+    // 启用/禁用对null和undefined的类型守卫
+    "strictNullChecks": true,
+    // 启用/禁用对所有位置的未类型化位置的检查
+    "strictBindCallApply": true,
+    // 启用/禁用对导入的模块的类型声明文件的解析
+    "esModuleInterop": true,
+    // 启用/禁用对JSX的类型检查
+    "jsx": "react"
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}
